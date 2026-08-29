@@ -1,0 +1,114 @@
+name: shiakah
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+
+
+  cupertino_icons: ^1.0.8
+  cached_network_image: ^3.3.1
+  connectivity_plus: ^6.1.4
+  dio: ^5.7.0
+  easy_localization: ^3.0.7
+  equatable: ^2.0.5
+  flutter_bloc: ^8.1.6
+  flutter_local_notifications: ^19.3.0
+  flutter_screenutil: ^5.9.3
+  flutter_svg: ^2.0.14
+  get_it: ^8.0.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  image_picker: ^1.1.2
+  internet_connection_checker_plus: ^2.7.1
+  logger: ^2.5.0
+  path_provider: ^2.1.5
+  pretty_dio_logger: ^1.4.0
+  shimmer: ^3.0.0
+  timezone: ^0.10.0
+  url_launcher: ^6.3.1
+  webview_flutter: ^4.10.0
+  permission_handler: ^11.3.1
+  go_router: ^16.1.0
+
+
+
+dev_dependencies:
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.6
+  flutter_test:
+    sdk: flutter
+
+
+
+
+
+
+  flutter_lints: ^5.0.0
+  rename: ^3.1.0
+
+
+flutter:
+
+
+
+
+  uses-material-design: true
+
+#  fonts:
+#    - family: Montserrat
+#      fonts:
+#        - asset: assets/fonts/ArbFONTS-Montserrat-Arabic-Thin.ttf
+#          weight: 100
+#        - asset: assets/fonts/ArbFONTS-Montserrat-Arabic-ExtraLight.ttf
+#          weight: 200
+#        - asset: assets/fonts/ArbFONTS-Montserrat-Arabic-Light.ttf
+#          weight: 300
+#        - asset: assets/fonts/ArbFONTS-Montserrat-Arabic-Regular.ttf
+#          weight: 400
+#        - asset: assets/fonts/ArbFONTS-Montserrat-Arabic-Medium.ttf
+#          weight: 500
+#        - asset: assets/fonts/ArbFONTS-Montserrat-Arabic-SemiBold.ttf
+#          weight: 600
+#        - asset: assets/fonts/ArbFONTS-Montserrat-Arabic-Bold.ttf
+#          weight: 700
+#        - asset: assets/fonts/ArbFONTS-Montserrat-Arabic-ExtraBold.ttf
+#          weight: 800
+#        - asset: assets/fonts/ArbFONTS-Montserrat-Arabic-Black.ttf
+#          weight: 900
+
+  assets:
+    - assets/translations/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
