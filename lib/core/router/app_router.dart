@@ -7,12 +7,12 @@ abstract interface class AppRouter {
     routes: [
       GoRoute(
         path: Routes.initial,
-        builder: (context, state) => const MyHomePage(title: 'Flutter Demo Home Page'),
+        builder: (context, state) => const SplashScreen(),
       ),
-      // GoRoute(
-      //   path: Routes.second,
-      //   builder: (context, state) => const SecondPage(),
-      // ),
+      GoRoute(
+        path: Routes.home,
+        builder: (context, state) => const MyHomePage(title: 'Shiakah POS'),
+      ),
     ],
   );
 
