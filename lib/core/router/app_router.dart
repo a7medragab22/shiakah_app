@@ -10,6 +10,14 @@ abstract interface class AppRouter {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
+        path: Routes.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: Routes.welcome,
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
         path: Routes.home,
         builder: (context, state) => const MyHomePage(title: 'Shiakah POS'),
       ),

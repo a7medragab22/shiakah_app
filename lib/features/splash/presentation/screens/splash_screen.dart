@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/local_storage/local_storage.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/router/router.dart';
 
@@ -61,10 +62,24 @@ class _SplashScreenState extends State<SplashScreen>
     // Start logo animation
     _logoController.forward();
 
-    // Navigate to home page after animation finishes (approx 3.2s)
-    Timer(const Duration(milliseconds: 3200), () {
+    // Navigate after animation finishes (approx 3.2s)
+    Timer(const Duration(milliseconds: 3200), () async {
       if (mounted) {
-        context.go(Routes.home);
+        final hasSeenOnboarding = await HiveServiceImpl.get<bool>(
+                'settings_box', 'has_seen_onboarding') ??
+            false;
+        if (mounted) {
+          if (!hasSeenOnboarding) {
+            context.go(Routes.onboarding);
+          } else {
+            final token = HiveServiceImpl.instance.getAccessToken();
+            if (token != null && token.isNotEmpty) {
+              context.go(Routes.home);
+            } else {
+              context.go(Routes.welcome);
+            }
+          }
+        }
       }
     });
   }
@@ -117,8 +132,8 @@ class _SplashScreenState extends State<SplashScreen>
                     tag: 'app_logo',
                     child: Image.asset(
                       'assets/images/logo.png',
-                      width: 450.w,
-                      height: 450.h,
+                      width: 220.w,
+                      height: 220.h,
                       fit: BoxFit.contain,
                     ),
                   ),

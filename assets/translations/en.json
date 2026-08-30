@@ -1,6 +1,20 @@
 {
-  "hello" : "Hello",
-  "choose_image" : "Choose Image",
-  "take_photo" : "Take Photo",
-  "choose_from_gallery" : "Choose from Gallery"
+  "hello": "Hello",
+  "choose_image": "Choose Image",
+  "take_photo": "Take Photo",
+  "choose_from_gallery": "Choose from Gallery",
+  "skip": "Skip",
+  "next": "Next",
+  "get_started": "Get Started",
+  "onboarding_title_1": "Discover Your Perfect Style",
+  "onboarding_subtitle_1": "Find outfits that match your personality, preferences, and every occasion.",
+  "onboarding_title_2": "Style Smarter with AI",
+  "onboarding_subtitle_2": "Snap or upload any clothing item and get outfit recommendations tailored just for you.",
+  "onboarding_title_3": "See It on You First",
+  "onboarding_subtitle_3": "Preview personalized outfits on your avatar with recommendations tailored to today's weather and every occasion.",
+  "sign_up": "Sign Up",
+  "sign_in": "Sign In",
+  "welcome_to": "Welcome to ",
+  "shiakah": "SHIAKAH",
+  "welcome_subtitle": "Your AI Fashion Stylist is here to help you discover personalized outfits, smarter styling, and the perfect look for every occasion."
 }
