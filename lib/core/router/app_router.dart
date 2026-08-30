@@ -34,6 +34,18 @@ abstract interface class AppRouter {
         builder: (context, state) => const StyleSetupScreen(),
       ),
       GoRoute(
+        path: Routes.genderSelection,
+        builder: (context, state) => const GenderSelectionScreen(),
+      ),
+      GoRoute(
+        path: Routes.personalInfo,
+        builder: (context, state) => const PersonalInfoScreen(),
+      ),
+      GoRoute(
+        path: Routes.bodyType,
+        builder: (context, state) => const BodyTypeScreen(),
+      ),
+      GoRoute(
         path: Routes.home,
         builder: (context, state) => const MyHomePage(title: 'Shiakah POS'),
       ),

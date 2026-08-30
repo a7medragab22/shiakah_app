@@ -7,5 +7,8 @@ abstract interface class Routes{
   static const String register = "/register";
   static const String verifyOtp = "/verify-otp";
   static const String styleSetup = "/style-setup";
+  static const String genderSelection = "/gender-selection";
+  static const String personalInfo = "/personal-info";
+  static const String bodyType = "/body-type";
   static const String home = "/home";
 }

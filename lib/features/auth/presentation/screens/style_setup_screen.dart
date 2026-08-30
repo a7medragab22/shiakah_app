@@ -73,7 +73,7 @@ class StyleSetupScreen extends StatelessWidget {
 
                   // Let's Go button
                   _LetsGoButton(
-                    onPressed: () => context.go(Routes.home),
+                    onPressed: () => context.go(Routes.genderSelection),
                   ),
 
                   SizedBox(height: 36.h),

@@ -12,6 +12,9 @@ import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/verify_otp_screen.dart';
 import '../../features/auth/presentation/screens/style_setup_screen.dart';
+import '../../features/auth/presentation/screens/gender_selection_screen.dart';
+import '../../features/auth/presentation/screens/personal_info_screen.dart';
+import '../../features/auth/presentation/screens/body_type_screen.dart';
 import '../../main.dart';
 
 part 'app_router.dart';

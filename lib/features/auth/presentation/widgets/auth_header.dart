@@ -22,6 +22,7 @@ class AuthHeader extends StatelessWidget {
     this.fallbackRoute,
     this.height,
     this.backgroundColor,
+    this.stepIndicator,
   });
 
   final AuthHeaderType type;
@@ -37,6 +38,9 @@ class AuthHeader extends StatelessWidget {
 
   final double? height;
   final Color? backgroundColor;
+
+  /// Optional widget placed below the top-bar row (e.g. a step indicator).
+  final Widget? stepIndicator;
 
   @override
   Widget build(BuildContext context) {
@@ -75,40 +79,49 @@ class AuthHeader extends StatelessWidget {
               ),
             ),
 
-          // ─── Top bar (back + optional title) ─────────────────────────
+          // ─── Top bar (back + optional title + optional step bar) ──────
           SafeArea(
             child: Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              child: Stack(
-                alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Back button
-                  Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: _BackButton(fallbackRoute: fallbackRoute),
+                  // Row: back button + centered title
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: _BackButton(fallbackRoute: fallbackRoute),
+                      ),
+                      if (title != null)
+                        Text(
+                          title!,
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w700,
+                            color: type == AuthHeaderType.image
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                            shadows: type == AuthHeaderType.image
+                                ? [
+                                    Shadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.4),
+                                      blurRadius: 4,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                        ),
+                    ],
                   ),
 
-                  // Optional centred title
-                  if (title != null)
-                    Text(
-                      title!,
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
-                        color: type == AuthHeaderType.image
-                            ? Colors.white
-                            : AppColors.textPrimary,
-                        shadows: type == AuthHeaderType.image
-                            ? [
-                                Shadow(
-                                  color: Colors.black.withValues(alpha: 0.4),
-                                  blurRadius: 4,
-                                ),
-                              ]
-                            : null,
-                      ),
-                    ),
+                  // Optional step-progress indicator below the bar
+                  if (stepIndicator != null) ...[
+                    SizedBox(height: 10.h),
+                    stepIndicator!,
+                  ],
                 ],
               ),
             ),

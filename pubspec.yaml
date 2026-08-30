@@ -87,6 +87,7 @@ flutter:
   assets:
     - assets/translations/
     - assets/images/
+    - assets/images/body_type/
 
 
 
