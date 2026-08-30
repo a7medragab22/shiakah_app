@@ -18,6 +18,22 @@ abstract interface class AppRouter {
         builder: (context, state) => const WelcomeScreen(),
       ),
       GoRoute(
+        path: Routes.login,
+        builder: (context, state) => const SignInScreen(),
+      ),
+      GoRoute(
+        path: Routes.register,
+        builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: Routes.verifyOtp,
+        builder: (context, state) => const VerifyOtpScreen(),
+      ),
+      GoRoute(
+        path: Routes.styleSetup,
+        builder: (context, state) => const StyleSetupScreen(),
+      ),
+      GoRoute(
         path: Routes.home,
         builder: (context, state) => const MyHomePage(title: 'Shiakah POS'),
       ),

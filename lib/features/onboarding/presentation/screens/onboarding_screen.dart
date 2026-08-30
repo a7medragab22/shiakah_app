@@ -21,7 +21,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const Color _bgColor = Color(0xFFEFE5D8);
 
   Future<void> _finishOnboarding() async {
-    await HiveServiceImpl.put<bool>('settings_box', 'has_seen_onboarding', true);
+    await HiveServiceImpl.put<bool>(
+        'settings_box', 'has_seen_onboarding', true);
     if (mounted) {
       context.go(Routes.welcome);
     }

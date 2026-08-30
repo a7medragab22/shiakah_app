@@ -82,8 +82,7 @@ class WelcomeScreen extends StatelessWidget {
                 height: 52.h,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate to sign up or home
-                    context.go(Routes.home);
+                    context.go(Routes.register);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -112,8 +111,7 @@ class WelcomeScreen extends StatelessWidget {
                 height: 52.h,
                 child: OutlinedButton(
                   onPressed: () {
-                    // Navigate to sign in or home
-                    context.go(Routes.home);
+                    context.go(Routes.login);
                   },
                   style: OutlinedButton.styleFrom(
                     backgroundColor: Colors.transparent,

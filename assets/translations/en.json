@@ -16,5 +16,21 @@
   "sign_in": "Sign In",
   "welcome_to": "Welcome to ",
   "shiakah": "SHIAKAH",
-  "welcome_subtitle": "Your AI Fashion Stylist is here to help you discover personalized outfits, smarter styling, and the perfect look for every occasion."
+  "welcome_subtitle": "Your AI Fashion Stylist is here to help you discover personalized outfits, smarter styling, and the perfect look for every occasion.",
+  "welcome_back": "Welcome Back",
+  "sign_in_subtitle": "Sign in to continue your personalized styling experience.",
+  "phone_number": "Phone Number",
+  "phone_hint": "1234 567 890",
+  "verify_number_note": "We'll verify your number before creating your account.",
+  "continue_btn": "Continue",
+  "new_to_shiakah": "New to SHIAKAH? ",
+  "create_an_account": "Create an account",
+  "create_account_title": "Create Account",
+  "create_your_account": "Create Your Account",
+  "sign_up_subtitle": "Enter your phone number to receive a verification code and start your AI fashion journey.",
+  "already_have_an_account": "Already have an account? ",
+  "verify_your_number": "Verify Your Number",
+  "verify_subtitle": "We've sent a 6-digit verification code to your phone. Enter it below to continue.",
+  "didnt_receive_code": "Didn't receive the code? ",
+  "resend_code": "Resend Code"
 }
