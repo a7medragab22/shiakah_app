@@ -10,21 +10,27 @@ class AuthPrimaryButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.isEnabled = true,
   });
 
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final bool isEnabled;
 
   @override
   Widget build(BuildContext context) {
+    final bool active = isEnabled && onPressed != null;
+
     return SizedBox(
       width: double.infinity,
       height: 52.h,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: active ? onPressed : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: active ? AppColors.primary : const Color(0xFFD5C7B5),
           foregroundColor: Colors.white,
+          disabledBackgroundColor: const Color(0xFFD5C7B5),
+          disabledForegroundColor: Colors.white.withValues(alpha: 0.75),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14.r),

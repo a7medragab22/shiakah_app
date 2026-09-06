@@ -220,15 +220,16 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
                   ],
                 ),
 
-                SizedBox(height: 28.h),
+                const Spacer(),
+                SizedBox(height: 16.h),
 
                 // ── Continue Button ─────────────────────────────────────
                 AuthPrimaryButton(
                   label: 'Continue',
-                  onPressed: () => context.go(Routes.home),
+                  onPressed: () => context.go(Routes.defineStyle),
                 ),
 
-                SizedBox(height: 12.h),
+                SizedBox(height: 8.h),
               ],
             ),
           ),

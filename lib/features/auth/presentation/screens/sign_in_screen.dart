@@ -62,7 +62,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         "We'll verify your number before creating your account.",
                   ),
 
-                  SizedBox(height: 36.h),
+                  const Spacer(),
+                  SizedBox(height: 16.h),
 
                   // Continue button
                   AuthPrimaryButton(
@@ -79,7 +80,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     onTap: () => context.go(Routes.register),
                   ),
 
-                  SizedBox(height: 12.h),
+                  SizedBox(height: 8.h),
                 ],
               ),
             ),

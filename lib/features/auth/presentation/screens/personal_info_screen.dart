@@ -249,7 +249,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   ),
                 ),
 
-                SizedBox(height: 28.h),
+                const Spacer(),
+                SizedBox(height: 16.h),
 
                 // Continue button
                 AuthPrimaryButton(
@@ -257,7 +258,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   onPressed: () => context.go(Routes.bodyType),
                 ),
 
-                SizedBox(height: 12.h),
+                SizedBox(height: 8.h),
               ],
             ),
           ),

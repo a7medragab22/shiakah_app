@@ -10,5 +10,8 @@ abstract interface class Routes{
   static const String genderSelection = "/gender-selection";
   static const String personalInfo = "/personal-info";
   static const String bodyType = "/body-type";
+  static const String defineStyle = "/define-style";
+  static const String completeProfile = "/complete-profile";
   static const String home = "/home";
+  static const String profile = "/profile";
 }

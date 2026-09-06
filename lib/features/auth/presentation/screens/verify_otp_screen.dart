@@ -93,7 +93,8 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                   },
                 ),
 
-                SizedBox(height: 36.h),
+                const Spacer(),
+                SizedBox(height: 16.h),
 
                 // Continue button
                 AuthPrimaryButton(
@@ -101,7 +102,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                   onPressed: () => context.go(Routes.styleSetup),
                 ),
 
-                SizedBox(height: 16.h),
+                SizedBox(height: 8.h),
               ],
             ),
           ),

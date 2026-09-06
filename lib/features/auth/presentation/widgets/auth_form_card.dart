@@ -18,6 +18,9 @@ class AuthFormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double hPad = horizontalPadding ?? 24.w;
+    final double vPad = verticalPadding ?? 20.h;
+
     return Expanded(
       child: Container(
         width: double.infinity,
@@ -27,12 +30,23 @@ class AuthFormCard extends StatelessWidget {
             top: Radius.circular(28.r),
           ),
         ),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal: horizontalPadding ?? 24.w,
-            vertical: verticalPadding ?? 20.h,
-          ),
-          child: child,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: hPad,
+                vertical: vPad,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - (vPad * 2),
+                ),
+                child: IntrinsicHeight(
+                  child: child,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

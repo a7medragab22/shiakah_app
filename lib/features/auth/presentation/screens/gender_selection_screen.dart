@@ -105,17 +105,19 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
                   ],
                 ),
 
-                SizedBox(height: 36.h),
+                const Spacer(),
+                SizedBox(height: 16.h),
 
                 // Continue — enabled only when a gender is selected
                 AuthPrimaryButton(
                   label: 'Continue',
+                  isEnabled: _selected != null,
                   onPressed: _selected == null
-                      ? () {}
+                      ? null
                       : () => context.go(Routes.personalInfo),
                 ),
 
-                SizedBox(height: 12.h),
+                SizedBox(height: 8.h),
               ],
             ),
           ),

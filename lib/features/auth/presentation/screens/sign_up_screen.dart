@@ -62,7 +62,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       "We'll verify your number before creating your account.",
                 ),
 
-                SizedBox(height: 36.h),
+                const Spacer(),
+                SizedBox(height: 16.h),
 
                 // Continue button → Verify OTP
                 AuthPrimaryButton(
@@ -79,7 +80,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   onTap: () => context.go(Routes.login),
                 ),
 
-                SizedBox(height: 12.h),
+                SizedBox(height: 8.h),
               ],
             ),
           ),
