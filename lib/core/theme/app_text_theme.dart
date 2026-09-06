@@ -4,23 +4,23 @@ part of 'theme.dart';
 mixin AppThemeData on ThemeData {
   static ThemeData light(BuildContext context) => ThemeData(
     brightness: Brightness.light,
-    primaryColor: const Color.fromRGBO(81, 82, 221, 1),
+    primaryColor: AppColors.primary,
     colorScheme: ColorScheme.light(
-      primary: const Color.fromRGBO(81, 82, 221, 1),
-      secondary: HexColor.fromHex('#083740'),
+      primary: AppColors.primary,
+      secondary: AppColors.secondary,
       surface: Colors.white,
-      error: Colors.red,
+      error: AppColors.notificationDot,
 
-      onPrimary: const Color.fromRGBO(27, 22, 94, 1),
-      onSecondary: const Color.fromRGBO(22, 82, 166, 1),
-      onSurface: Colors.black,
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
+      onSurface: AppColors.textPrimary,
       onError: Colors.white,
-      outlineVariant: Colors.blueAccent,
+      outlineVariant: AppColors.divider,
       onInverseSurface: Colors.grey[200],
     ),
     scaffoldBackgroundColor: Colors.white,
     appBarTheme:  AppBarTheme(
-        color: Colors.white,
+        backgroundColor: Colors.white,
 
         titleTextStyle: AppTextTheme.headlineLarge,
         surfaceTintColor: Colors.white,

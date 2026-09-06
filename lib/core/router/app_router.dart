@@ -7,12 +7,60 @@ abstract interface class AppRouter {
     routes: [
       GoRoute(
         path: Routes.initial,
-        builder: (context, state) => const MyHomePage(title: 'Flutter Demo Home Page'),
+        builder: (context, state) => const SplashScreen(),
       ),
-      // GoRoute(
-      //   path: Routes.second,
-      //   builder: (context, state) => const SecondPage(),
-      // ),
+      GoRoute(
+        path: Routes.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: Routes.welcome,
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
+        path: Routes.login,
+        builder: (context, state) => const SignInScreen(),
+      ),
+      GoRoute(
+        path: Routes.register,
+        builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: Routes.verifyOtp,
+        builder: (context, state) => const VerifyOtpScreen(),
+      ),
+      GoRoute(
+        path: Routes.styleSetup,
+        builder: (context, state) => const StyleSetupScreen(),
+      ),
+      GoRoute(
+        path: Routes.genderSelection,
+        builder: (context, state) => const GenderSelectionScreen(),
+      ),
+      GoRoute(
+        path: Routes.personalInfo,
+        builder: (context, state) => const PersonalInfoScreen(),
+      ),
+      GoRoute(
+        path: Routes.bodyType,
+        builder: (context, state) => const BodyTypeScreen(),
+      ),
+      GoRoute(
+        path: Routes.defineStyle,
+        builder: (context, state) => const DefineStyleScreen(),
+      ),
+      GoRoute(
+        path: Routes.completeProfile,
+        builder: (context, state) => const CompleteProfileScreen(),
+      ),
+      GoRoute(
+        path: Routes.home,
+        builder: (context, state) => const MainNavigationScreen(),
+      ),
+      GoRoute(
+        path: Routes.profile,
+        builder: (context, state) => const ProfileScreen(),
+      ),
     ],
   );
 

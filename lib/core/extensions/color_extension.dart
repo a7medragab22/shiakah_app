@@ -36,7 +36,7 @@ mixin HexColor on Color {
   }
 
   static Color get succesColor =>  const Color(0xff008000);
-  static Color get primaryColor => const Color.fromRGBO(81, 82, 221, 1);
-  static Color get errorColor =>  const Color(0xffFF0000);
-  static Color get greyColor =>  const Color(0xff6B7280);
+  static Color get primaryColor => AppColors.primary;
+  static Color get errorColor =>  AppColors.notificationDot;
+  static Color get greyColor =>  AppColors.secondary;
 }
