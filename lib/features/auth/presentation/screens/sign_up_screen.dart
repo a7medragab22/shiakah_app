@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shiakah/features/auth/presentation/widgets/custom_auth_input_field.dart';
 
 import '../../../../core/router/router.dart';
 import '../widgets/auth_buttons.dart';
 import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
-import '../widgets/phone_input_field.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -16,11 +16,13 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _gmailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _gmailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -54,17 +56,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 SizedBox(height: 24.h),
 
                 // Phone input
-                PhoneInputField(
-                  controller: _phoneController,
-                  label: 'Phone Number',
-                  hintText: '1234 567 890',
-                  helperText:
-                      "We'll verify your number before creating your account.",
+                CustomAuthInputField(
+                  controller: _gmailController,
+                  label: 'Gmail',
+                  hintText: 'example@gmail.com',
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: Icons.mail_outline_rounded,
                 ),
-
-                const Spacer(),
-                SizedBox(height: 16.h),
-
+                SizedBox(height: 14.h),
+                CustomAuthInputField(
+                  controller: _passwordController,
+                  label: 'Password',
+                  hintText: '••••••••',
+                  isPassword: true,
+                  prefixIcon: Icons.lock_outline_rounded,
+                ),
+                Spacer(),
                 // Continue button → Verify OTP
                 AuthPrimaryButton(
                   label: 'Continue',
