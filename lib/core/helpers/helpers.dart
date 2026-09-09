@@ -26,3 +26,4 @@ part 'image_picker_helper.dart';
 part 'sync_manager.dart';
 part 'connectivity_service.dart';
 part 'generic_data_source.dart';
+part 'closet_manager.dart';
