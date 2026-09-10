@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/helpers/helpers.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../profile/presentation/screens/profile_screen.dart';
+import 'photo_analysis_preview_screen.dart';
 
 class AddManuallyScreen extends StatefulWidget {
   const AddManuallyScreen({super.key});
@@ -18,14 +17,29 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
   int _selectedCategoryIndex = 0;
 
   final List<Map<String, String>> _categories = const [
-    {'title': 'Crew Neck T-Shirt', 'image': 'assets/images/T-shirts category/1.jpg'},
-    {'title': 'Oversized T-Shirt', 'image': 'assets/images/T-shirts category/2.jpg'},
-    {'title': 'V-Neck T-Shirt', 'image': 'assets/images/T-shirts category/3.jpg'},
+    {
+      'title': 'Crew Neck T-Shirt',
+      'image': 'assets/images/T-shirts category/1.jpg'
+    },
+    {
+      'title': 'Oversized T-Shirt',
+      'image': 'assets/images/T-shirts category/2.jpg'
+    },
+    {
+      'title': 'V-Neck T-Shirt',
+      'image': 'assets/images/T-shirts category/3.jpg'
+    },
     {'title': 'Polo T-Shirt', 'image': 'assets/images/T-shirts category/4.jpg'},
     {'title': 'Tank Top', 'image': 'assets/images/T-shirts category/5.jpg'},
     {'title': 'Long Sleeve', 'image': 'assets/images/T-shirts category/6.png'},
-    {'title': 'Henley T-Shirt', 'image': 'assets/images/T-shirts category/7.jpg'},
-    {'title': 'Graphic T-Shirt', 'image': 'assets/images/T-shirts category/8.jpg'},
+    {
+      'title': 'Henley T-Shirt',
+      'image': 'assets/images/T-shirts category/7.jpg'
+    },
+    {
+      'title': 'Graphic T-Shirt',
+      'image': 'assets/images/T-shirts category/8.jpg'
+    },
   ];
 
   // ── 2. Pattern Data ────────────────────────────────────────────────────────
@@ -35,18 +49,29 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
     {'name': 'Solid', 'image': 'assets/images/T-shirts patern/p10.jpg'},
     {'name': 'Graphic', 'image': 'assets/images/T-shirts patern/p9.png'},
     {'name': 'Printed', 'image': 'assets/images/T-shirts patern/p8.jpg'},
-    {'name': 'Vertical Striped', 'image': 'assets/images/T-shirts patern/p7.jpg'},
-    {'name': 'Horizontal Striped', 'image': 'assets/images/T-shirts patern/p6.jpg'},
+    {
+      'name': 'Vertical Striped',
+      'image': 'assets/images/T-shirts patern/p7.jpg'
+    },
+    {
+      'name': 'Horizontal Striped',
+      'image': 'assets/images/T-shirts patern/p6.jpg'
+    },
     {'name': 'Checked', 'image': 'assets/images/T-shirts patern/p5.jpg'},
     {'name': 'Plaid', 'image': 'assets/images/T-shirts patern/p4.jpg'},
     {'name': 'Floral', 'image': 'assets/images/T-shirts patern/p3.jpg'},
-    {'name': 'Horizontal Striped', 'image': 'assets/images/T-shirts patern/p2.jpg'},
+    {
+      'name': 'Horizontal Striped',
+      'image': 'assets/images/T-shirts patern/p2.jpg'
+    },
     {'name': 'Camouflage', 'image': 'assets/images/T-shirts patern/p1.jpg'},
   ];
 
   // ── 3. Colors Data ─────────────────────────────────────────────────────────
-  int _selectedColorCategoryIndex = 1; // Default to "Black & Gray" as in screenshot
-  String _selectedColorName = 'Charcoal'; // Default to Charcoal as in screenshot
+  int _selectedColorCategoryIndex =
+      1; // Default to "Black & Gray" as in screenshot
+  String _selectedColorName =
+      'Charcoal'; // Default to Charcoal as in screenshot
 
   final List<Map<String, dynamic>> _colorCategories = const [
     {
@@ -203,32 +228,30 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
   ];
 
   void _handleSave() {
-    final selectedImage = _categories[_selectedCategoryIndex]['image']!;
-    ClosetManager.instance.addItem(selectedImage);
+    final selectedCategory = _categories[_selectedCategoryIndex];
+    final selectedPattern = _patterns[_selectedPatternIndex];
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-            const SizedBox(width: 10),
-            Text(
-              '${_categories[_selectedCategoryIndex]['title']} added to My Closet!',
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF388E3C),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.r),
-        ),
-      ),
-    );
+    int hex = 0xFFFFFAFA;
+    for (var cat in _colorCategories) {
+      for (var col in (cat['colors'] as List)) {
+        if (col['name'] == _selectedColorName) {
+          hex = col['hex'] as int;
+          break;
+        }
+      }
+    }
 
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const ProfileScreen(),
+        builder: (_) => PhotoAnalysisPreviewScreen(
+          categoryTitle: selectedCategory['title'] ?? 'Crew Neck T-Shirt',
+          imagePath: selectedCategory['image'] ?? 'assets/images/T-shirts category/1.jpg',
+          patternName: selectedPattern['name'] ?? 'Solid',
+          colorName: _selectedColorName,
+          colorHex: hex,
+          fitName: _selectedFit,
+        ),
       ),
     );
   }
@@ -312,7 +335,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                           ),
                         ),
                         child: Text(
-                          'Save to My Closet',
+                          'Continue',
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
@@ -473,9 +496,8 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 11.5.sp,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w600,
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w600,
                             color: isSelected
                                 ? const Color(0xFF2C2520)
                                 : const Color(0xFF9E9893),
@@ -509,7 +531,6 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
           ),
         ),
         SizedBox(height: 12.h),
-
         SizedBox(
           height: 48.h,
           child: ListView.separated(
@@ -566,9 +587,8 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                         pattern['name']!,
                         style: TextStyle(
                           fontSize: 13.5.sp,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w600,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w600,
                           color: isSelected
                               ? const Color(0xFF2C2520)
                               : const Color(0xFF9E9893),
@@ -654,9 +674,8 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                       catName,
                       style: TextStyle(
                         fontSize: 14.5.sp,
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w600,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w600,
                         color: isSelected
                             ? const Color(0xFF3E3935)
                             : const Color(0xFFA8A29D),
@@ -723,9 +742,8 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                         colorName,
                         style: TextStyle(
                           fontSize: 13.5.sp,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w600,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w600,
                           color: isSelected
                               ? const Color(0xFF2C2520)
                               : const Color(0xFF9E9893),
@@ -741,9 +759,10 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                           shape: BoxShape.circle,
                           color: Color(colorHex),
                           border: Border.all(
-                            color: colorHex == 0xFFFFFFFF || colorHex == 0xFFFFFFF0
-                                ? Colors.grey.shade400
-                                : Colors.black.withValues(alpha: 0.1),
+                            color:
+                                colorHex == 0xFFFFFFFF || colorHex == 0xFFFFFFF0
+                                    ? Colors.grey.shade400
+                                    : Colors.black.withValues(alpha: 0.1),
                             width: 1.0,
                           ),
                         ),
@@ -934,12 +953,10 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                       fit,
                       style: TextStyle(
                         fontSize: 14.5.sp,
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w600,
-                        color: isSelected
-                            ? Colors.white
-                            : const Color(0xFFA09B95),
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w600,
+                        color:
+                            isSelected ? Colors.white : const Color(0xFFA09B95),
                       ),
                     ),
                   ),
