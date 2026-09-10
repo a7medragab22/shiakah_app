@@ -61,6 +61,10 @@ abstract interface class AppRouter {
         path: Routes.profile,
         builder: (context, state) => const ProfileScreen(),
       ),
+      GoRoute(
+        path: Routes.itemDetails,
+        builder: (context, state) => const ItemDetailsScreen(),
+      ),
     ],
   );
 

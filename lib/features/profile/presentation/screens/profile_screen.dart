@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/theme.dart';
+import 'item_details_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -422,57 +423,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildItemCard(String imagePath) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1EAE0),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: const Color(0xFFE8DFC0).withValues(alpha: 0.6),
-          width: 1.0,
-        ),
+  void _openItemDetails(BuildContext context, String imagePath) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ItemDetailsScreen(initialImage: imagePath),
       ),
-      child: Stack(
-        children: [
-          // Outfit / Clothing Image
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16.r),
-            child: Image.asset(
-              imagePath,
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-            ),
-          ),
+    );
+  }
 
-          // Top Left 3-Dots Action Button
-          Positioned(
-            top: 10.h,
-            left: 10.w,
-            child: Container(
-              width: 32.w,
-              height: 32.w,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.65),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  width: 1.0,
-                ),
-              ),
-              child: IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.more_vert_rounded,
-                  size: 18.sp,
-                  color: const Color(0xFF8E8883),
-                ),
-                padding: EdgeInsets.zero,
+  Widget _buildItemCard(String imagePath) {
+    return GestureDetector(
+      onTap: () => _openItemDetails(context, imagePath),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1EAE0),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: const Color(0xFFE8DFC0).withValues(alpha: 0.6),
+            width: 1.0,
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Outfit / Clothing Image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16.r),
+              child: Image.asset(
+                imagePath,
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
               ),
             ),
-          ),
-        ],
+
+            // Top Left 3-Dots Action Button
+            Positioned(
+              top: 10.h,
+              left: 10.w,
+              child: Container(
+                width: 32.w,
+                height: 32.w,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.65),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    width: 1.0,
+                  ),
+                ),
+                child: IconButton(
+                  onPressed: () => _openItemDetails(context, imagePath),
+                  icon: Icon(
+                    Icons.more_vert_rounded,
+                    size: 18.sp,
+                    color: const Color(0xFF8E8883),
+                  ),
+                  padding: EdgeInsets.zero,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

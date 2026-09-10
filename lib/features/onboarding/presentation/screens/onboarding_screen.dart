@@ -109,16 +109,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Left Image: Tall capsule (frame_17963)
+                  // Left Image: Tall capsule (Frame 17963)
                   Expanded(
                     flex: 11,
                     child: Image.asset(
-                      'assets/images/frame_17963.png',
+                      'assets/images/Frame 17963.png',
                       fit: BoxFit.contain,
                     ),
                   ),
                   SizedBox(width: 12.w),
-                  // Right Column: Circle top (frame_17965) + Rounded rect bottom (frame_17964)
+                  // Right Column: Circle top (Frame 17965) + Rounded rect bottom (Frame 17964)
                   Expanded(
                     flex: 10,
                     child: Column(
@@ -126,7 +126,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Expanded(
                           flex: 5,
                           child: Image.asset(
-                            'assets/images/frame_17965.png',
+                            'assets/images/Frame 17965.png',
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -134,7 +134,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Expanded(
                           flex: 6,
                           child: Image.asset(
-                            'assets/images/frame_17964.png',
+                            'assets/images/Frame 17964.png',
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -154,10 +154,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'onboarding_title_1'.tr(),
+                    'Discover Your Perfect Style'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 23.sp,
+                      fontSize: 26.sp,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                       height: 1.2,
@@ -167,10 +167,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 14.w),
                     child: Text(
-                      'onboarding_subtitle_1'.tr(),
+                      'Find outfits that match your personality, preferences, and every occasion.'
+                          .tr(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF6F6A65),
                         height: 1.4,
@@ -197,7 +198,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               flex: 12,
               child: Column(
                 children: [
-                  // Top Row: Flat lay outfits (frame_17975 & frame_17976)
+                  // Top Row: Flat lay outfits (Frame 17975 & Frame 17976)
                   Expanded(
                     flex: 6,
                     child: Row(
@@ -205,14 +206,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       children: [
                         Expanded(
                           child: Image.asset(
-                            'assets/images/frame_17975.png',
+                            'assets/images/Frame 17975.png',
                             fit: BoxFit.contain,
                           ),
                         ),
                         SizedBox(width: 14.w),
                         Expanded(
                           child: Image.asset(
-                            'assets/images/frame_17976.png',
+                            'assets/images/Frame 17976.png',
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -220,13 +221,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ),
                   SizedBox(height: 12.h),
-                  // Bottom Image: Center piece with recommendations (frame_17977)
+                  // Bottom Image: Center piece with recommendations (Frame 17977)
                   Expanded(
                     flex: 5,
                     child: SizedBox(
                       width: double.infinity,
                       child: Image.asset(
-                        'assets/images/frame_17977.png',
+                        'assets/images/Frame 17977.png',
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -244,10 +245,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'onboarding_title_2'.tr(),
+                    'Style Smarter with AI'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 24.sp,
+                      fontSize: 26.sp,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                       height: 1.2,
@@ -257,10 +258,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: Text(
-                      'onboarding_subtitle_2'.tr(),
+                      'Snap or upload any clothing item and get outfit recommendations tailored just for you. '
+                          .tr(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF6F6A65),
                         height: 1.4,
@@ -290,27 +292,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Left Panel: Beige top & trousers mannequin (frame_1000005722)
+                    // Left Panel: Beige top & trousers mannequin (Frame 1000005722)
                     Expanded(
                       flex: 10,
                       child: Image.asset(
-                        'assets/images/frame_1000005722.png',
+                        'assets/images/Frame 1000005722.png',
                         fit: BoxFit.cover,
                       ),
                     ),
-                    // Middle Panel: Blue shirt mannequin (frame_1000005725)
+                    // Middle Panel: Blue shirt mannequin (Frame 1000005725)
                     Expanded(
                       flex: 13,
                       child: Image.asset(
-                        'assets/images/frame_1000005725.png',
+                        'assets/images/Frame 1000005725.png',
                         fit: BoxFit.cover,
                       ),
                     ),
-                    // Right Panel: Pink striped polo mannequin (frame_1000005723)
+                    // Right Panel: Pink striped polo mannequin (Frame 1000005723)
                     Expanded(
                       flex: 10,
                       child: Image.asset(
-                        'assets/images/frame_1000005723.png',
+                        'assets/images/Frame 1000005723.png',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -328,10 +330,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'onboarding_title_3'.tr(),
+                    'See It on You First'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 24.sp,
+                      fontSize: 26.sp,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                       height: 1.2,
@@ -341,10 +343,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: Text(
-                      'onboarding_subtitle_3'.tr(),
+                      'Preview personalized outfits on your avatar with recommendations tailored to today’  s weather and every occasion.'
+                          .tr(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF6F6A65),
                         height: 1.4,
@@ -411,7 +414,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
             child: Text(
-              _currentIndex == 2 ? 'get_started'.tr() : 'next'.tr(),
+              _currentIndex == 2 ? 'Get started'.tr() : 'Next'.tr(),
               style: TextStyle(
                 fontSize: 17.sp,
                 fontWeight: FontWeight.w600,

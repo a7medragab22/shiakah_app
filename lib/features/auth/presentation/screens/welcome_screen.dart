@@ -37,7 +37,7 @@ class WelcomeScreen extends StatelessWidget {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: 'welcome_to'.tr(),
+                      text: 'Welcome to '.tr(),
                       style: TextStyle(
                         fontSize: 26.sp,
                         fontWeight: FontWeight.w700,
@@ -45,7 +45,7 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                     ),
                     TextSpan(
-                      text: 'shiakah'.tr(),
+                      text: 'SHIAKAH'.tr(),
                       style: TextStyle(
                         fontSize: 26.sp,
                         fontWeight: FontWeight.w700,
@@ -63,11 +63,12 @@ class WelcomeScreen extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: Text(
-                  'welcome_subtitle'.tr(),
+                  'Your AI Fashion Stylist is here to help you discover personalized outfits, smarter styling, and the perfect look for every occasion. '
+                      .tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14.5.sp,
-                    fontWeight: FontWeight.w400,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF6F6A65),
                     height: 1.45,
                   ),
@@ -93,7 +94,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'sign_up'.tr(),
+                    'Sign Up'.tr(),
                     style: TextStyle(
                       fontSize: 17.sp,
                       fontWeight: FontWeight.w600,
@@ -126,7 +127,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'sign_in'.tr(),
+                    'Sign In'.tr(),
                     style: TextStyle(
                       fontSize: 17.sp,
                       fontWeight: FontWeight.w600,

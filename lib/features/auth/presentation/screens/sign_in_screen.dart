@@ -6,7 +6,7 @@ import '../../../../core/router/router.dart';
 import '../widgets/auth_buttons.dart';
 import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
-import '../widgets/phone_input_field.dart';
+import '../widgets/custom_auth_input_field.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -16,11 +16,13 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _gmailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _gmailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -37,10 +39,12 @@ class _SignInScreenState extends State<SignInScreen> {
               type: AuthHeaderType.plain,
               imagePath: 'assets/images/rectangle_209.png',
               fallbackRoute: Routes.welcome,
-              height: 230.h,
+              height: 200.h,
             ),
 
             // ── White form card ──────────────────────────────────────────
+            // AuthFormCard already handles scrolling via LayoutBuilder + SingleChildScrollView
+            // + IntrinsicHeight, allowing Spacer() to expand properly without exception!
             AuthFormCard(
               child: Column(
                 children: [
@@ -51,24 +55,35 @@ class _SignInScreenState extends State<SignInScreen> {
                         'Sign in to continue your personalized styling experience.',
                   ),
 
-                  SizedBox(height: 24.h),
+                  SizedBox(height: 20.h),
 
-                  // Phone input
-                  PhoneInputField(
-                    controller: _phoneController,
-                    label: 'Phone Number',
-                    hintText: '1234 567 890',
-                    helperText:
-                        "We'll verify your number before creating your account.",
+                  // Gmail Input Field
+                  CustomAuthInputField(
+                    controller: _gmailController,
+                    label: 'Gmail',
+                    hintText: 'example@gmail.com',
+                    keyboardType: TextInputType.emailAddress,
+                    prefixIcon: Icons.mail_outline_rounded,
                   ),
 
-                  const Spacer(),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 14.h),
 
-                  // Continue button
+                  // Password Input Field with Eye Toggle Suffix Icon
+                  CustomAuthInputField(
+                    controller: _passwordController,
+                    label: 'Password',
+                    hintText: '••••••••',
+                    isPassword: true,
+                    prefixIcon: Icons.lock_outline_rounded,
+                  ),
+
+                  // Spacer works perfectly inside AuthFormCard!
+                  const Spacer(),
+
+                  // Continue button → Go straight to HOME (Routes.home)
                   AuthPrimaryButton(
                     label: 'Continue',
-                    onPressed: () => context.go(Routes.verifyOtp),
+                    onPressed: () => context.go(Routes.home),
                   ),
 
                   SizedBox(height: 16.h),

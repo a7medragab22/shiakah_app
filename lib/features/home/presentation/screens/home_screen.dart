@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../widgets/camera_access_bottom_sheet.dart';
+import 'add_manually_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -485,72 +486,82 @@ class HomeScreen extends StatelessWidget {
 
         // ── Card 2: Add Manually (White Card) ──────────────────────────────
         Expanded(
-          child: Container(
-            height: 140.h,
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18.r),
-              border: Border.all(
-                color: const Color(0xFFEAE3D9),
-                width: 1.2,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AddManuallyScreen(),
+                ),
+              );
+            },
+            child: Container(
+              height: 140.h,
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18.r),
+                border: Border.all(
+                  color: const Color(0xFFEAE3D9),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Pencil Icon Frame
-                Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF7F3EE),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: const Color(0xFFE8DFC0),
-                      width: 1.0,
-                    ),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.edit_outlined,
-                      color: const Color(0xFFB5956A),
-                      size: 20.sp,
-                    ),
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Add Manually',
-                      style: TextStyle(
-                        fontSize: 16.5.sp,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFFC0A580),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Pencil Icon Frame
+                  Container(
+                    width: 40.w,
+                    height: 40.w,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF7F3EE),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: const Color(0xFFE8DFC0),
+                        width: 1.0,
                       ),
                     ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      'Enter your clothing details yourself.',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(0xFF8E8883),
-                        height: 1.25,
+                    child: Center(
+                      child: Icon(
+                        Icons.edit_outlined,
+                        color: const Color(0xFFB5956A),
+                        size: 20.sp,
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Add Manually',
+                        style: TextStyle(
+                          fontSize: 16.5.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFC0A580),
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Enter your clothing details yourself.',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF8E8883),
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

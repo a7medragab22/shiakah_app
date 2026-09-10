@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,3 +26,4 @@ part 'image_picker_helper.dart';
 part 'sync_manager.dart';
 part 'connectivity_service.dart';
 part 'generic_data_source.dart';
+part 'closet_manager.dart';
