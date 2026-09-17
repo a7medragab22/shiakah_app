@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/theme.dart';
+import '../screens/photo_analysis_preview_screen.dart';
 
 /// Modal bottom sheet presented when tapping "Add Clothing" on the Home Screen.
 class CameraAccessBottomSheet extends StatelessWidget {
@@ -79,7 +80,8 @@ class CameraAccessBottomSheet extends StatelessWidget {
                 ),
                 subtitle: Text(
                   'Take a photo of your clothing item',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+                  style:
+                      TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                 ),
                 onTap: () async {
                   Navigator.pop(sheetContext);
@@ -87,11 +89,12 @@ class CameraAccessBottomSheet extends StatelessWidget {
                     final XFile? photo =
                         await picker.pickImage(source: ImageSource.camera);
                     if (photo != null && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Clothing photo captured: ${photo.name}'),
-                          backgroundColor: const Color(0xFF388E3C),
-                          behavior: SnackBarBehavior.floating,
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PhotoAnalysisPreviewScreen(
+                            imagePath: photo.path,
+                          ),
                         ),
                       );
                     }
@@ -101,12 +104,12 @@ class CameraAccessBottomSheet extends StatelessWidget {
                       final XFile? photo =
                           await picker.pickImage(source: ImageSource.gallery);
                       if (photo != null && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content:
-                                Text('Clothing photo selected: ${photo.name}'),
-                            backgroundColor: const Color(0xFF388E3C),
-                            behavior: SnackBarBehavior.floating,
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PhotoAnalysisPreviewScreen(
+                              imagePath: photo.path,
+                            ),
                           ),
                         );
                       }
@@ -138,7 +141,8 @@ class CameraAccessBottomSheet extends StatelessWidget {
                 ),
                 subtitle: Text(
                   'Select an existing image from photos',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+                  style:
+                      TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                 ),
                 onTap: () async {
                   Navigator.pop(sheetContext);
@@ -146,11 +150,12 @@ class CameraAccessBottomSheet extends StatelessWidget {
                     final XFile? photo =
                         await picker.pickImage(source: ImageSource.gallery);
                     if (photo != null && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Clothing photo selected: ${photo.name}'),
-                          backgroundColor: const Color(0xFF388E3C),
-                          behavior: SnackBarBehavior.floating,
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PhotoAnalysisPreviewScreen(
+                            imagePath: photo.path,
+                          ),
                         ),
                       );
                     }

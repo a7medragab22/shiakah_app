@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/theme.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
+import '../cubit/weather_cubit.dart';
 import '../widgets/camera_access_bottom_sheet.dart';
+import '../widgets/weather_card_widget.dart';
 import 'add_manually_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -18,51 +21,66 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── 1. Top Header (Profile + Greeting + Notification & User Icons) ──
-              _buildHeader(context),
-              SizedBox(height: 18.h),
+    return BlocProvider<WeatherCubit>(
+      create: (_) => WeatherCubit()..fetchWeather(),
+      child: Builder(
+        builder: (context) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFFAFAFA),
+            body: SafeArea(
+              child: RefreshIndicator(
+                color: const Color(0xFFC8A97E),
+                onRefresh: () async {
+                  await context.read<WeatherCubit>().fetchWeather(isRefresh: true);
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── 1. Top Header (Profile + Greeting + Notification & User Icons) ──
+                      _buildHeader(context),
+                      SizedBox(height: 18.h),
 
-              // ── 2. Weather & Location Card ────────────────────────────────
-              _buildWeatherCard(),
-              SizedBox(height: 16.h),
+                      // ── 2. Weather & Location Card ────────────────────────────────
+                      const WeatherCardWidget(),
+                      SizedBox(height: 16.h),
 
-              // ── 3. Today's Style Guide Card ───────────────────────────────
-              _buildStyleGuideCard(),
-              SizedBox(height: 16.h),
+                      // ── 3. Today's Style Guide Card ───────────────────────────────
+                      _buildStyleGuideCard(),
+                      SizedBox(height: 16.h),
 
-              // ── 4. Action Cards (Add Clothing & Add Manually) ──────────────
-              _buildActionCardsRow(context),
-              SizedBox(height: 8.h),
+                      // ── 4. Action Cards (Add Clothing & Add Manually) ──────────────
+                      _buildActionCardsRow(context),
+                      SizedBox(height: 8.h),
 
-              // Sub-text under action cards
-              Center(
-                child: Text(
-                  'Scanning is faster and you can edit everything before saving.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFFA09B95),
-                    fontWeight: FontWeight.w400,
+                      // Sub-text under action cards
+                      Center(
+                        child: Text(
+                          'Scanning is faster and you can edit everything before saving.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: const Color(0xFFA09B95),
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 18.h),
+
+                      // ── 5. Good to Know Card ──────────────────────────────────────
+                      _buildGoodToKnowCard(),
+                      SizedBox(height: 20.h),
+                    ],
                   ),
                 ),
               ),
-              SizedBox(height: 18.h),
-
-              // ── 5. Good to Know Card ──────────────────────────────────────
-              _buildGoodToKnowCard(),
-              SizedBox(height: 20.h),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -164,156 +182,6 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // Weather Card
-  // ───────────────────────────────────────────────────────────────────────────
-  Widget _buildWeatherCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(
-          color: const Color(0xFFEAE3D9),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Row 1: Date & Location
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Sunday • Jul 20',
-                style: TextStyle(
-                  fontSize: 13.5.sp,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF9E9893),
-                ),
-              ),
-              Row(
-                children: [
-                  Icon(
-                    Icons.location_on_outlined,
-                    size: 16.sp,
-                    color: const Color(0xFFB5956A),
-                  ),
-                  SizedBox(width: 4.w),
-                  Text(
-                    'Egypt, Cairo',
-                    style: TextStyle(
-                      fontSize: 13.5.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFB5956A),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 14.h),
-
-          // Row 2: Sunny Weather Info & Temperature
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Left: Sun Icon + Sunny Text
-              Row(
-                children: [
-                  Icon(
-                    Icons.wb_sunny_outlined,
-                    size: 26.sp,
-                    color: const Color(0xFFE5A638),
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'Sunny',
-                    style: TextStyle(
-                      fontSize: 21.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFE5A638),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Right: Temperature + High/Low
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '33°',
-                    style: TextStyle(
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFFE5A638),
-                      height: 1.0,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'H:36°   L:24°',
-                    style: TextStyle(
-                      fontSize: 12.5.sp,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF8E8883),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 14.h),
-
-          // Row 3: Golden Banner with Sparkle Icon
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFBF4E8),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: const Color(0xFFF3E4CD),
-                width: 1.0,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.auto_awesome_rounded,
-                  color: const Color(0xFFC8A97E),
-                  size: 17.sp,
-                ),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Text(
-                    'Comfortable weather for everyday styling.',
-                    style: TextStyle(
-                      fontSize: 12.5.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFB5956A),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
