@@ -6,6 +6,17 @@ class ClosetManager extends ValueNotifier<List<String>> {
   ClosetManager._internal() : super([]);
 
   void addItem(String path) {
-    value = [path, ...value];
+    if (!value.contains(path)) {
+      value = [path, ...value];
+    }
+  }
+
+  void removeItem(String path) {
+    value = value.where((item) => item != path).toList();
+  }
+
+  bool contains(String path) {
+    return value.contains(path);
   }
 }
+

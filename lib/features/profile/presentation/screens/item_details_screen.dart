@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/helpers/helpers.dart';
 import '../../../../core/theme/theme.dart';
 import 'more_details_screen.dart';
 
@@ -18,7 +19,6 @@ class ItemDetailsScreen extends StatefulWidget {
 
 class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
   int _currentIndex = 3; // 4th image (index 3 out of 7, displays "4/7")
-  bool _isFavorite = false;
 
   // Carousel images demo list
   final List<String> _thumbnails = const [
@@ -32,17 +32,51 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
   ];
 
   late PageController _pageController;
+  late ScrollController _thumbnailScrollController;
 
   @override
   void initState() {
     super.initState();
+    if (widget.initialImage != null) {
+      final idx = _thumbnails.indexOf(widget.initialImage!);
+      if (idx != -1) {
+        _currentIndex = idx;
+      }
+    }
     _pageController = PageController(initialPage: _currentIndex);
+    _thumbnailScrollController = ScrollController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToThumbnail(_currentIndex, animate: false);
+    });
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _thumbnailScrollController.dispose();
     super.dispose();
+  }
+
+  void _scrollToThumbnail(int index, {bool animate = true}) {
+    if (!_thumbnailScrollController.hasClients) return;
+
+    final itemWidth = 80.w;
+    final targetOffset = (index * itemWidth).toDouble();
+
+    final maxScroll = _thumbnailScrollController.position.maxScrollExtent;
+    final minScroll = _thumbnailScrollController.position.minScrollExtent;
+    final clampedOffset = targetOffset.clamp(minScroll, maxScroll);
+
+    if (animate) {
+      _thumbnailScrollController.animateTo(
+        clampedOffset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _thumbnailScrollController.jumpTo(clampedOffset);
+    }
   }
 
   void _nextPage() {
@@ -140,30 +174,72 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                   ),
 
                   // Favorite Button
-                  Container(
-                    width: 40.w,
-                    height: 40.w,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _isFavorite = !_isFavorite;
-                        });
-                      },
-                      icon: Icon(
-                        _isFavorite
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_border_rounded,
-                        size: 20.sp,
-                        color: _isFavorite
-                            ? const Color(0xFFE56B82)
-                            : AppColors.textPrimary,
-                      ),
-                      padding: EdgeInsets.zero,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final currentImage = _thumbnails[_currentIndex];
+                      final isFav =
+                          LooksManager.instance.contains(currentImage);
+
+                      return Container(
+                        width: 40.w,
+                        height: 40.w,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          onPressed: () {
+                            LooksManager.instance.toggleItem(currentImage);
+                            setState(() {});
+
+                            final isNowFav =
+                                LooksManager.instance.contains(currentImage);
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    Icon(
+                                      isNowFav
+                                          ? Icons.favorite_rounded
+                                          : Icons.favorite_border_rounded,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      isNowFav
+                                          ? 'Added to My Looks!'
+                                          : 'Removed from My Looks',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                                backgroundColor: isNowFav
+                                    ? const Color(0xFFE56B82)
+                                    : const Color(0xFF262321),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            isFav
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
+                            size: 20.sp,
+                            color: isFav
+                                ? const Color(0xFFE56B82)
+                                : AppColors.textPrimary,
+                          ),
+                          padding: EdgeInsets.zero,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -181,6 +257,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                       setState(() {
                         _currentIndex = index;
                       });
+                      _scrollToThumbnail(index);
                     },
                     itemCount: _thumbnails.length,
                     itemBuilder: (context, index) {
@@ -360,10 +437,16 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
 
                   // Horizontal Thumbnails Carousel
                   SizedBox(
-                    height: 95.h,
+                    height: 118.h,
                     child: ListView.builder(
+                      controller: _thumbnailScrollController,
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.symmetric(
+                        horizontal:
+                            (MediaQuery.of(context).size.width / 2) - 52.w,
+                        vertical: 8.h,
+                      ),
                       itemCount: _thumbnails.length,
                       itemBuilder: (context, index) {
                         final isSelected = index == _currentIndex;
@@ -376,40 +459,64 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                             );
                           },
                           child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOutCubic,
+                            transform: Matrix4.translationValues(
+                              0,
+                              isSelected ? -10.h : 0,
+                              0,
+                            ),
                             margin: EdgeInsets.symmetric(horizontal: 6.w),
-                            width: isSelected ? 85.w : 68.w,
-                            height: isSelected ? 95.h : 80.h,
+                            width: isSelected ? 92.w : 66.w,
+                            height: isSelected ? 96.h : 76.h,
                             decoration: BoxDecoration(
                               color: const Color(0xFFEFE8DD),
                               borderRadius: BorderRadius.circular(
-                                isSelected ? 22.r : 18.r,
+                                isSelected ? 22.r : 16.r,
                               ),
                               border: Border.all(
                                 color: isSelected
                                     ? const Color(0xFFC8A97E)
                                     : const Color(0xFFE2D6C6),
-                                width: isSelected ? 2.2 : 1.0,
+                                width: isSelected ? 2.8 : 1.0,
                               ),
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
                                         color: const Color(0xFFC8A97E)
-                                            .withValues(alpha: 0.25),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
+                                            .withValues(alpha: 0.42),
+                                        blurRadius: 18,
+                                        spreadRadius: 1,
+                                        offset: const Offset(0, 10),
+                                      ),
+                                      BoxShadow(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.12),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 6),
                                       ),
                                     ]
-                                  : null,
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.03),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                isSelected ? 20.r : 16.r,
-                              ),
-                              child: Image.asset(
-                                _thumbnails[index],
-                                fit: BoxFit.cover,
-                                alignment: Alignment.topCenter,
+                            child: AnimatedOpacity(
+                              duration: const Duration(milliseconds: 250),
+                              opacity: isSelected ? 1.0 : 0.65,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  isSelected ? 19.r : 14.r,
+                                ),
+                                child: Image.asset(
+                                  _thumbnails[index],
+                                  fit: BoxFit.cover,
+                                  alignment: Alignment.topCenter,
+                                ),
                               ),
                             ),
                           ),

@@ -27,3 +27,5 @@ part 'sync_manager.dart';
 part 'connectivity_service.dart';
 part 'generic_data_source.dart';
 part 'closet_manager.dart';
+part 'looks_manager.dart';
+
