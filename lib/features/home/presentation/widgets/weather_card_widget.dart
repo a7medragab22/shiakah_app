@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -20,7 +21,48 @@ class WeatherCardWidget extends StatelessWidget {
       final month = months[dt.month - 1];
       return '$weekday • $month ${dt.day}';
     } catch (_) {
-      return 'Today';
+      final dt = DateTime.now();
+      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return '${weekdays[dt.weekday - 1]} • ${months[dt.month - 1]} ${dt.day}';
+    }
+  }
+
+  IconData _getWeatherIconData(String condition) {
+    final cond = condition.toLowerCase();
+    if (cond.contains('rain') || cond.contains('drizzle') || cond.contains('shower')) {
+      return Icons.grain_rounded;
+    } else if (cond.contains('thunder') || cond.contains('storm')) {
+      return Icons.thunderstorm_rounded;
+    } else if (cond.contains('snow') || cond.contains('ice') || cond.contains('sleet') || cond.contains('blizzard')) {
+      return Icons.ac_unit_rounded;
+    } else if (cond.contains('cloud') || cond.contains('overcast')) {
+      return Icons.wb_cloudy_rounded;
+    } else if (cond.contains('mist') || cond.contains('fog')) {
+      return Icons.blur_on_rounded;
+    } else if (cond.contains('wind') || cond.contains('breeze')) {
+      return Icons.air_rounded;
+    } else if (cond.contains('clear') || cond.contains('night')) {
+      return Icons.nights_stay_rounded;
+    } else {
+      return Icons.wb_sunny_rounded;
+    }
+  }
+
+  Color _getWeatherIconColor(String condition) {
+    final cond = condition.toLowerCase();
+    if (cond.contains('rain') || cond.contains('drizzle') || cond.contains('shower') || cond.contains('thunder') || cond.contains('storm')) {
+      return const Color(0xFF4A90E2);
+    } else if (cond.contains('snow') || cond.contains('ice')) {
+      return const Color(0xFF64B5F6);
+    } else if (cond.contains('cloud') || cond.contains('overcast') || cond.contains('mist') || cond.contains('fog')) {
+      return const Color(0xFF78909C);
+    } else if (cond.contains('wind')) {
+      return const Color(0xFF2EAA9B);
+    } else if (cond.contains('clear') || cond.contains('night')) {
+      return const Color(0xFF5C6BC0);
+    } else {
+      return const Color(0xFFE5A638);
     }
   }
 
@@ -37,6 +79,31 @@ class WeatherCardWidget extends StatelessWidget {
     } else {
       return 'Chilly weather. Consider warm sweater or heavy jacket.';
     }
+  }
+
+  Widget _buildWeatherIcon(WeatherModel weather) {
+    final fallbackIconData = _getWeatherIconData(weather.conditionText);
+    final iconColor = _getWeatherIconColor(weather.conditionText);
+
+    final fallbackWidget = Icon(
+      fallbackIconData,
+      size: 28.sp,
+      color: iconColor,
+    );
+
+    final iconUrl = weather.conditionIcon.trim();
+    if (iconUrl.isEmpty || !iconUrl.startsWith('http')) {
+      return fallbackWidget;
+    }
+
+    return CachedNetworkImage(
+      imageUrl: iconUrl,
+      width: 36.w,
+      height: 36.w,
+      fit: BoxFit.contain,
+      placeholder: (_, __) => fallbackWidget,
+      errorWidget: (_, __, ___) => fallbackWidget,
+    );
   }
 
   @override
@@ -60,6 +127,8 @@ class WeatherCardWidget extends StatelessWidget {
         if (weather == null) {
           return _buildErrorState(context);
         }
+
+        final themeColor = _getWeatherIconColor(weather.conditionText);
 
         return Material(
           color: Colors.transparent,
@@ -141,34 +210,17 @@ class WeatherCardWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Left: Condition Icon + Text
+                      // Left: Dynamic Weather Icon + Condition Text
                       Row(
                         children: [
-                          if (weather.conditionIcon.isNotEmpty)
-                            Image.network(
-                              weather.conditionIcon,
-                              width: 34.w,
-                              height: 34.w,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => Icon(
-                                Icons.wb_sunny_outlined,
-                                size: 26.sp,
-                                color: const Color(0xFFE5A638),
-                              ),
-                            )
-                          else
-                            Icon(
-                              Icons.wb_sunny_outlined,
-                              size: 26.sp,
-                              color: const Color(0xFFE5A638),
-                            ),
+                          _buildWeatherIcon(weather),
                           SizedBox(width: 8.w),
                           Text(
                             weather.conditionText,
                             style: TextStyle(
                               fontSize: 20.sp,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFFE5A638),
+                              color: themeColor,
                             ),
                           ),
                         ],
@@ -183,7 +235,7 @@ class WeatherCardWidget extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 28.sp,
                               fontWeight: FontWeight.w800,
-                              color: const Color(0xFFE5A638),
+                              color: themeColor,
                               height: 1.0,
                             ),
                           ),
