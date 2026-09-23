@@ -19,6 +19,7 @@ import '../../features/auth/presentation/screens/define_style_screen.dart';
 import '../../features/auth/presentation/screens/complete_profile_screen.dart';
 import '../../features/home/presentation/screens/main_navigation_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/screens/item_details_screen.dart';
 import '../../main.dart';
 
 part 'app_router.dart';

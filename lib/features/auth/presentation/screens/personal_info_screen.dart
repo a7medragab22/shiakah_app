@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -9,8 +10,6 @@ import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/step_progress_indicator.dart';
 
-/// Step 2 of 5 in the style-setup flow.
-/// Collects age group and skin tone from the user.
 class PersonalInfoScreen extends StatefulWidget {
   const PersonalInfoScreen({super.key});
 
@@ -44,7 +43,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           AuthHeader(
             type: AuthHeaderType.image,
             imagePath: 'assets/images/cloths.jpg',
-            title: 'Create Account',
+            title: 'create_account_title'.tr(),
             fallbackRoute: Routes.genderSelection,
             height: 130.h,
             stepIndicator: const StepProgressIndicator(currentStep: 2),
@@ -66,7 +65,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       ),
                       SizedBox(height: 14.h),
                       Text(
-                        'Tell us about yourself',
+                        'tell_us_about_yourself'.tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 22.sp,
@@ -78,7 +77,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 12.w),
                         child: Text(
-                          'This helps us personalize your avatar and outfit recommendations.',
+                          'personal_info_subtitle'.tr(),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13.5.sp,
@@ -106,7 +105,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Age Group',
+                              'age_group'.tr(),
                               style: TextStyle(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.w700,
@@ -176,7 +175,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Skin Tone',
+                        'skin_tone'.tr(),
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w700,
@@ -254,7 +253,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
                 // Continue button
                 AuthPrimaryButton(
-                  label: 'Continue',
+                  label: 'continue_btn'.tr(),
                   onPressed: () => context.go(Routes.bodyType),
                 ),
 
@@ -268,11 +267,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Private helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Rounded card container used for each section on this screen.
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.child});
   final Widget child;
@@ -292,7 +286,6 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-/// Circular radio indicator dot.
 class _RadioDot extends StatelessWidget {
   const _RadioDot({required this.selected});
   final bool selected;

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -11,20 +12,18 @@ import '../widgets/step_progress_indicator.dart';
 
 class _BodyTypeItem {
   final String id;
-  final String title;
-  final String subtitle;
+  final String titleKey;
+  final String subtitleKey;
   final String imagePath;
 
   const _BodyTypeItem({
     required this.id,
-    required this.title,
-    required this.subtitle,
+    required this.titleKey,
+    required this.subtitleKey,
     required this.imagePath,
   });
 }
 
-/// Step 3 of 5 in the style-setup flow.
-/// Collects height, weight, and body type from the user.
 class BodyTypeScreen extends StatefulWidget {
   const BodyTypeScreen({super.key});
 
@@ -43,20 +42,20 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
   static const List<_BodyTypeItem> _topRowItems = [
     _BodyTypeItem(
       id: 'slim',
-      title: 'Slim',
-      subtitle: 'Lean physique.',
+      titleKey: 'slim',
+      subtitleKey: 'lean_physique',
       imagePath: 'assets/images/body_type/slim.png',
     ),
     _BodyTypeItem(
       id: 'regular',
-      title: 'Regular',
-      subtitle: 'Balanced physique.',
+      titleKey: 'regular',
+      subtitleKey: 'balanced_physique',
       imagePath: 'assets/images/body_type/regular.png',
     ),
     _BodyTypeItem(
       id: 'athletic',
-      title: 'Athletic',
-      subtitle: 'Athletic build.',
+      titleKey: 'athletic',
+      subtitleKey: 'athletic_build',
       imagePath: 'assets/images/body_type/athletic.png',
     ),
   ];
@@ -64,14 +63,14 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
   static const List<_BodyTypeItem> _bottomRowItems = [
     _BodyTypeItem(
       id: 'stocky',
-      title: 'Stocky',
-      subtitle: 'Broad build.',
+      titleKey: 'stocky',
+      subtitleKey: 'broad_build',
       imagePath: 'assets/images/body_type/stocky.png',
     ),
     _BodyTypeItem(
       id: 'plus_size',
-      title: 'Plus Size',
-      subtitle: 'Fuller build.',
+      titleKey: 'plus_size',
+      subtitleKey: 'fuller_build',
       imagePath: 'assets/images/body_type/plus_size.png',
     ),
   ];
@@ -93,7 +92,7 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
           AuthHeader(
             type: AuthHeaderType.image,
             imagePath: 'assets/images/cloths.jpg',
-            title: 'Create Account',
+            title: 'create_account_title'.tr(),
             fallbackRoute: Routes.personalInfo,
             height: 130.h,
             stepIndicator: const StepProgressIndicator(currentStep: 3),
@@ -115,7 +114,7 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
                       ),
                       SizedBox(height: 14.h),
                       Text(
-                        'Tell us about your body',
+                        'tell_us_about_body'.tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 22.sp,
@@ -127,7 +126,7 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 12.w),
                         child: Text(
-                          'This helps us recommend outfits that fit you better and improve your AI avatar.',
+                          'body_type_subtitle'.tr(),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13.5.sp,
@@ -149,7 +148,7 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
                     // Height Field
                     Expanded(
                       child: _MeasurementField(
-                        label: 'Height',
+                        label: 'height'.tr(),
                         controller: _heightController,
                       ),
                     ),
@@ -157,7 +156,7 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
                     // Weight Field
                     Expanded(
                       child: _MeasurementField(
-                        label: 'Weight',
+                        label: 'weight'.tr(),
                         controller: _weightController,
                       ),
                     ),
@@ -168,7 +167,7 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
 
                 // ── Body Type Section ───────────────────────────────────
                 Text(
-                  'Body Type',
+                  'body_type'.tr(),
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w700,
@@ -225,7 +224,7 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
 
                 // ── Continue Button ─────────────────────────────────────
                 AuthPrimaryButton(
-                  label: 'Continue',
+                  label: 'continue_btn'.tr(),
                   onPressed: () => context.go(Routes.defineStyle),
                 ),
 
@@ -238,10 +237,6 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Private Widgets
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _MeasurementField extends StatelessWidget {
   const _MeasurementField({
@@ -351,7 +346,7 @@ class _BodyTypeCard extends StatelessWidget {
             SizedBox(height: 6.h),
             // Title
             Text(
-              item.title,
+              item.titleKey.tr(),
               style: TextStyle(
                 fontSize: 13.5.sp,
                 fontWeight: FontWeight.w700,
@@ -363,7 +358,7 @@ class _BodyTypeCard extends StatelessWidget {
             SizedBox(height: 2.h),
             // Subtitle
             Text(
-              item.subtitle,
+              item.subtitleKey.tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 9.5.sp,

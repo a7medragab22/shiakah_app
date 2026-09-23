@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -45,7 +46,7 @@ class StyleSetupScreen extends StatelessWidget {
 
                   // Main headline
                   Text(
-                    "Let's build your\nAI Stylist",
+                    'lets_build_stylist'.tr(),
                     style: TextStyle(
                       fontSize: 32.sp,
                       fontWeight: FontWeight.w800,
@@ -59,8 +60,7 @@ class StyleSetupScreen extends StatelessWidget {
 
                   // Subtitle
                   Text(
-                    'This will only take about a minute and helps us\n'
-                    'personalize your outfit recommendations.',
+                    'stylist_subtitle'.tr(),
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
@@ -87,10 +87,6 @@ class StyleSetupScreen extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Private: the styled "Let's Go" pill button
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _LetsGoButton extends StatelessWidget {
   const _LetsGoButton({required this.onPressed});
   final VoidCallback onPressed;
@@ -111,7 +107,7 @@ class _LetsGoButton extends StatelessWidget {
           ),
         ),
         child: Text(
-          "Let's Go",
+          'lets_go'.tr(),
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w700,

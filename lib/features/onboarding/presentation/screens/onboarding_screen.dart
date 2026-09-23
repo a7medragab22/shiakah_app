@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/extensions/extensions.dart';
 import '../../../../core/local_storage/local_storage.dart';
+import '../../../../core/localization/locales.dart';
 import '../../../../core/router/router.dart';
 import '../../../../core/theme/theme.dart';
 
@@ -43,12 +45,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
           child: Column(
             children: [
-              // Top Bar with Skip Button
+              // Top Bar with Skip Button & Globe Language Button at Top Right
               SizedBox(
-                height: 32.h,
+                height: 38.h,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Skip button
                     if (_currentIndex < 2)
                       GestureDetector(
                         onTap: _finishOnboarding,
@@ -62,7 +65,49 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             decorationColor: const Color(0xFF8E8883),
                           ),
                         ),
+                      )
+                    else
+                      const SizedBox.shrink(),
+
+                    // Globe Language Button at Top Right
+                    InkWell(
+                      onTap: () {
+                        context.setLocale(
+                          context.isArabic ? Locales.english : Locales.arabic,
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(20.r),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(
+                            color: const Color(0xFFD6C9B8),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.language_rounded,
+                              size: 18.sp,
+                              color: AppColors.primary,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              context.isArabic ? 'EN' : 'عربي',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -109,16 +154,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Left Image: Tall capsule (frame_17963)
+                  // Left Image: Tall capsule (Frame 17963)
                   Expanded(
                     flex: 11,
                     child: Image.asset(
-                      'assets/images/frame_17963.png',
+                      'assets/images/Frame 17963.png',
                       fit: BoxFit.contain,
                     ),
                   ),
                   SizedBox(width: 12.w),
-                  // Right Column: Circle top (frame_17965) + Rounded rect bottom (frame_17964)
+                  // Right Column: Circle top (Frame 17965) + Rounded rect bottom (Frame 17964)
                   Expanded(
                     flex: 10,
                     child: Column(
@@ -126,7 +171,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Expanded(
                           flex: 5,
                           child: Image.asset(
-                            'assets/images/frame_17965.png',
+                            'assets/images/Frame 17965.png',
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -134,7 +179,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Expanded(
                           flex: 6,
                           child: Image.asset(
-                            'assets/images/frame_17964.png',
+                            'assets/images/Frame 17964.png',
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -157,7 +202,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     'onboarding_title_1'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 23.sp,
+                      fontSize: 26.sp,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                       height: 1.2,
@@ -170,7 +215,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       'onboarding_subtitle_1'.tr(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF6F6A65),
                         height: 1.4,
@@ -197,7 +242,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               flex: 12,
               child: Column(
                 children: [
-                  // Top Row: Flat lay outfits (frame_17975 & frame_17976)
+                  // Top Row: Flat lay outfits (Frame 17975 & Frame 17976)
                   Expanded(
                     flex: 6,
                     child: Row(
@@ -205,14 +250,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       children: [
                         Expanded(
                           child: Image.asset(
-                            'assets/images/frame_17975.png',
+                            'assets/images/Frame 17975.png',
                             fit: BoxFit.contain,
                           ),
                         ),
                         SizedBox(width: 14.w),
                         Expanded(
                           child: Image.asset(
-                            'assets/images/frame_17976.png',
+                            'assets/images/Frame 17976.png',
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -220,13 +265,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ),
                   SizedBox(height: 12.h),
-                  // Bottom Image: Center piece with recommendations (frame_17977)
+                  // Bottom Image: Center piece with recommendations (Frame 17977)
                   Expanded(
                     flex: 5,
                     child: SizedBox(
                       width: double.infinity,
                       child: Image.asset(
-                        'assets/images/frame_17977.png',
+                        'assets/images/Frame 17977.png',
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -247,7 +292,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     'onboarding_title_2'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 24.sp,
+                      fontSize: 26.sp,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                       height: 1.2,
@@ -260,7 +305,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       'onboarding_subtitle_2'.tr(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF6F6A65),
                         height: 1.4,
@@ -290,27 +335,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Left Panel: Beige top & trousers mannequin (frame_1000005722)
+                    // Left Panel: Beige top & trousers mannequin (Frame 1000005722)
                     Expanded(
                       flex: 10,
                       child: Image.asset(
-                        'assets/images/frame_1000005722.png',
+                        'assets/images/Frame 1000005722.png',
                         fit: BoxFit.cover,
                       ),
                     ),
-                    // Middle Panel: Blue shirt mannequin (frame_1000005725)
+                    // Middle Panel: Blue shirt mannequin (Frame 1000005725)
                     Expanded(
                       flex: 13,
                       child: Image.asset(
-                        'assets/images/frame_1000005725.png',
+                        'assets/images/Frame 1000005725.png',
                         fit: BoxFit.cover,
                       ),
                     ),
-                    // Right Panel: Pink striped polo mannequin (frame_1000005723)
+                    // Right Panel: Pink striped polo mannequin (Frame 1000005723)
                     Expanded(
                       flex: 10,
                       child: Image.asset(
-                        'assets/images/frame_1000005723.png',
+                        'assets/images/Frame 1000005723.png',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -331,7 +376,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     'onboarding_title_3'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 24.sp,
+                      fontSize: 26.sp,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                       height: 1.2,
@@ -344,7 +389,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       'onboarding_subtitle_3'.tr(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF6F6A65),
                         height: 1.4,

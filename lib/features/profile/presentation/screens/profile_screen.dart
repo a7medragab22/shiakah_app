@@ -1,7 +1,12 @@
+import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/helpers/helpers.dart';
+import '../../../../core/localization/app_localization_helper.dart';
 import '../../../../core/theme/theme.dart';
+import 'item_details_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,57 +18,47 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   int _selectedTabIndex = 0; // 0: My Closet, 1: My Looks
 
-  // Demo clothing assets for My Closet tab
-  final List<String> _closetItems = const [
-    'assets/images/Frame 17975.png',
-    'assets/images/Frame 17976.png',
-    'assets/images/Frame 17977.png',
-    'assets/images/Frame 17963.png',
-    'assets/images/Frame 17964.png',
-    'assets/images/Frame 17965.png',
-  ];
-
-  // Demo outfit assets for My Looks tab
-  final List<String> _looksItems = const [
-    'assets/images/Frame 1000005722.png',
-    'assets/images/Frame 1000005723.png',
-    'assets/images/Frame 1000005725.png',
-    'assets/images/Frame 17975.png',
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          children: [
-            // ── 1. Hero Header Section with Portrait & Floating Name Badge ──
-            _buildHeroHeader(context),
-            SizedBox(height: 16.h),
+      body: AnimatedBuilder(
+        animation: Listenable.merge([
+          ClosetManager.instance,
+          LooksManager.instance,
+        ]),
+        builder: (context, _) {
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                // ── 1. Hero Header Section with Portrait & Floating Name Badge ──
+                _buildHeroHeader(context),
+                SizedBox(height: 16.h),
 
-            // Padding wrapper for the remaining content
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 18.w),
-              child: Column(
-                children: [
-                  // ── 2. Stats Row (My Closet & My Looks Counts) ──────────────
-                  _buildStatsRow(),
-                  SizedBox(height: 16.h),
+                // Padding wrapper for the remaining content
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 18.w),
+                  child: Column(
+                    children: [
+                      // ── 2. Stats Row (My Closet & My Looks Counts) ──────────────
+                      _buildStatsRow(),
+                      SizedBox(height: 16.h),
 
-                  // ── 3. Segmented Tab Switcher (My Closet / My Looks) ────────
-                  _buildSegmentedTabSwitcher(),
-                  SizedBox(height: 16.h),
+                      // ── 3. Segmented Tab Switcher (My Closet / My Looks) ────────
+                      _buildSegmentedTabSwitcher(),
+                      SizedBox(height: 16.h),
 
-                  // ── 4. Outfit / Item Grid View ──────────────────────────────
-                  _buildGridContent(),
-                  SizedBox(height: 24.h),
-                ],
-              ),
+                      // ── 4. Outfit / Item Grid View ──────────────────────────────
+                      _buildGridContent(),
+                      SizedBox(height: 24.h),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -216,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   SizedBox(width: 10.w),
                   Text(
-                    'Amgad Shallan',
+                    AppLocalizationHelper.getUserFullName(context),
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
@@ -237,42 +232,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Stats Row (My Closet & My Looks)
   // ───────────────────────────────────────────────────────────────────────────
   Widget _buildStatsRow() {
+    final closetCount = ClosetManager.instance.value.length;
+    final looksCount = LooksManager.instance.value.length;
+
     return Padding(
       padding: EdgeInsets.only(top: 14.h),
       child: Row(
         children: [
           // Stat 1: My Closet
           Expanded(
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: const Color(0xFFEAE3D9),
-                  width: 1.2,
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedTabIndex = 0),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: _selectedTabIndex == 0
+                        ? AppColors.primary
+                        : const Color(0xFFEAE3D9),
+                    width: _selectedTabIndex == 0 ? 1.8 : 1.2,
+                  ),
+                  boxShadow: _selectedTabIndex == 0
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : null,
                 ),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    '124',
-                    style: TextStyle(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                child: Column(
+                  children: [
+                    Text(
+                      '$closetCount',
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'My Closet',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF8E8883),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'my_closet'.tr(),
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF8E8883),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -280,36 +293,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // Stat 2: My Looks
           Expanded(
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: const Color(0xFFEAE3D9),
-                  width: 1.2,
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedTabIndex = 1),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: _selectedTabIndex == 1
+                        ? AppColors.primary
+                        : const Color(0xFFEAE3D9),
+                    width: _selectedTabIndex == 1 ? 1.8 : 1.2,
+                  ),
+                  boxShadow: _selectedTabIndex == 1
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : null,
                 ),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    '18',
-                    style: TextStyle(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                child: Column(
+                  children: [
+                    Text(
+                      '$looksCount',
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'My Looks',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF8E8883),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'my_looks'.tr(),
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF8E8883),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -349,7 +377,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
-                  'My Closet',
+                  'my_closet'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15.sp,
@@ -379,7 +407,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
-                  'My Looks',
+                  'my_looks'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15.sp,
@@ -403,7 +431,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Grid Content (Clothing & Outfits Grid Cards)
   // ───────────────────────────────────────────────────────────────────────────
   Widget _buildGridContent() {
-    final items = _selectedTabIndex == 0 ? _closetItems : _looksItems;
+    final items = _selectedTabIndex == 0
+        ? ClosetManager.instance.value
+        : LooksManager.instance.value;
+
+    if (items.isEmpty) {
+      return _buildEmptyState();
+    }
 
     return GridView.builder(
       shrinkWrap: true,
@@ -422,57 +456,279 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildItemCard(String imagePath) {
+  Widget _buildEmptyState() {
+    final isCloset = _selectedTabIndex == 0;
     return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 40.h, horizontal: 20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1EAE0),
-        borderRadius: BorderRadius.circular(16.r),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: const Color(0xFFE8DFC0).withValues(alpha: 0.6),
+          color: const Color(0xFFEAE3D9),
           width: 1.0,
         ),
       ),
-      child: Stack(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Outfit / Clothing Image
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16.r),
-            child: Image.asset(
-              imagePath,
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF7F3EE),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isCloset
+                  ? Icons.checkroom_rounded
+                  : Icons.favorite_border_rounded,
+              size: 42.sp,
+              color: isCloset ? AppColors.primary : const Color(0xFFE56B82),
             ),
           ),
-
-          // Top Left 3-Dots Action Button
-          Positioned(
-            top: 10.h,
-            left: 10.w,
-            child: Container(
-              width: 32.w,
-              height: 32.w,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.65),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  width: 1.0,
-                ),
-              ),
-              child: IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.more_vert_rounded,
-                  size: 18.sp,
-                  color: const Color(0xFF8E8883),
-                ),
-                padding: EdgeInsets.zero,
-              ),
+          SizedBox(height: 14.h),
+          Text(
+            isCloset ? 'Your Closet is Empty' : 'No Looks Saved Yet',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            isCloset
+                ? 'Add items from photo analysis or manual entry'
+                : 'Tap the heart icon on any outfit to save it to My Looks',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF8E8883),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _confirmAndDeleteItem(BuildContext context, String imagePath) {
+    final isCloset = _selectedTabIndex == 0;
+    final itemName = isCloset ? 'My Closet' : 'My Looks';
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          contentPadding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 12.h),
+          title: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFEBEE),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.delete_outline_rounded,
+                  color: const Color(0xFFD32F2F),
+                  size: 22.sp,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                'Delete Item',
+                style: TextStyle(
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to remove this item from $itemName?',
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+              color: AppColors.secondary,
+              height: 1.3,
+            ),
+          ),
+          actionsPadding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
+          actions: [
+            Row(
+              children: [
+                // Cancel Button (إلغاء)
+                Expanded(
+                  child: SizedBox(
+                    height: 44.h,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: Color(0xFFE2D6C6),
+                          width: 1.2,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10.w),
+
+                // Delete Button (مسح)
+                Expanded(
+                  child: SizedBox(
+                    height: 44.h,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        if (_selectedTabIndex == 0) {
+                          ClosetManager.instance.removeItem(imagePath);
+                        } else {
+                          LooksManager.instance.removeItem(imagePath);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD32F2F),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _openItemDetails(BuildContext context, String imagePath) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ItemDetailsScreen(initialImage: imagePath),
+      ),
+    );
+  }
+
+  Widget _buildItemCard(String imagePath) {
+    return GestureDetector(
+      onTap: () => _openItemDetails(context, imagePath),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1EAE0),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: const Color(0xFFE8DFC0).withValues(alpha: 0.6),
+            width: 1.0,
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Outfit / Clothing Image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16.r),
+              child: _buildItemImage(imagePath),
+            ),
+
+            // Top Right Delete/Remove Icon Button
+            Positioned(
+              top: 10.h,
+              right: 10.w,
+              child: Container(
+                width: 32.w,
+                height: 32.w,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: () => _confirmAndDeleteItem(context, imagePath),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    size: 16.sp,
+                    color: const Color(0xFF8E8883),
+                  ),
+                  padding: EdgeInsets.zero,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemImage(String path) {
+    if (path.startsWith('assets/')) {
+      return Image.asset(
+        path,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        errorBuilder: (_, __, ___) => _buildFallbackCardImage(),
+      );
+    } else {
+      final file = File(path);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          alignment: Alignment.topCenter,
+          errorBuilder: (_, __, ___) => _buildFallbackCardImage(),
+        );
+      }
+      return Image.asset(
+        path,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        errorBuilder: (_, __, ___) => _buildFallbackCardImage(),
+      );
+    }
+  }
+
+  Widget _buildFallbackCardImage() {
+    return Container(
+      color: const Color(0xFFF5EFE6),
+      child: Center(
+        child: Icon(
+          Icons.checkroom_rounded,
+          size: 40.sp,
+          color: AppColors.primary,
+        ),
       ),
     );
   }
@@ -506,3 +762,4 @@ class _BottomCurveClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
+

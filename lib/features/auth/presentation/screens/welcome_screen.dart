@@ -66,8 +66,8 @@ class WelcomeScreen extends StatelessWidget {
                   'welcome_subtitle'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14.5.sp,
-                    fontWeight: FontWeight.w400,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF6F6A65),
                     height: 1.45,
                   ),
