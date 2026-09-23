@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/localization/app_localization_helper.dart';
 import '../../../../core/theme/theme.dart';
 import 'photo_analysis_preview_screen.dart';
 
@@ -13,8 +15,75 @@ class AddManuallyScreen extends StatefulWidget {
 
 class _AddManuallyScreenState extends State<AddManuallyScreen> {
   // ── 1. Category Data ───────────────────────────────────────────────────────
-  String _selectedCategory = 'T-Shirts';
   int _selectedCategoryIndex = 0;
+  String get _selectedCategory => _categories[_selectedCategoryIndex]['title'] ?? 'T-Shirts';
+
+  String _translateCategory(String title) {
+    switch (title) {
+      case 'Crew Neck T-Shirt': return 'cat_crew_neck'.tr();
+      case 'Oversized T-Shirt': return 'cat_oversized'.tr();
+      case 'V-Neck T-Shirt': return 'cat_v_neck'.tr();
+      case 'Polo T-Shirt': return 'cat_polo'.tr();
+      case 'Tank Top': return 'cat_tank_top'.tr();
+      case 'Long Sleeve': return 'cat_long_sleeve'.tr();
+      case 'Henley T-Shirt': return 'cat_henley'.tr();
+      case 'Graphic T-Shirt': return 'cat_graphic'.tr();
+      default: return title;
+    }
+  }
+
+  String _translatePattern(String name) {
+    switch (name) {
+      case 'Solid': return 'pat_solid'.tr();
+      case 'Graphic': return 'pat_graphic'.tr();
+      case 'Printed': return 'pat_printed'.tr();
+      case 'Vertical Striped': return 'pat_vert_striped'.tr();
+      case 'Horizontal Striped': return 'pat_horiz_striped'.tr();
+      case 'Checked': return 'pat_checked'.tr();
+      case 'Plaid': return 'pat_plaid'.tr();
+      case 'Floral': return 'pat_floral'.tr();
+      case 'Camouflage': return 'pat_camouflage'.tr();
+      default: return name;
+    }
+  }
+
+  String _translateSleeve(String sleeve) {
+    switch (sleeve) {
+      case 'Short Sleeve': return 'short_sleeve'.tr();
+      case 'Long Sleeve': return 'long_sleeve'.tr();
+      case 'Sleeveless': return 'sleeveless'.tr();
+      case 'Raglan': return 'raglan'.tr();
+      default: return sleeve;
+    }
+  }
+
+  String _translateFit(String fit) {
+    switch (fit) {
+      case 'Regular': return 'fit_regular'.tr();
+      case 'Slim': return 'fit_slim'.tr();
+      case 'Relaxed': return 'fit_relaxed'.tr();
+      case 'Oversized': return 'fit_oversized'.tr();
+      default: return fit;
+    }
+  }
+
+  String _translateColorCategory(String cat) {
+    switch (cat) {
+      case 'White & Neutral': return 'col_white_neutral'.tr();
+      case 'Black & Gray': return 'col_black_gray'.tr();
+      case 'Brown & Earth': return 'col_brown_earth'.tr();
+      case 'Blue': return 'col_blue'.tr();
+      case 'Green': return 'col_green'.tr();
+      case 'Red': return 'col_red'.tr();
+      case 'Pink': return 'col_pink'.tr();
+      case 'Purple': return 'col_purple'.tr();
+      case 'Yellow': return 'col_yellow'.tr();
+      case 'Orange': return 'col_orange'.tr();
+      case 'Aqua & Teal': return 'col_aqua_teal'.tr();
+      case 'Metallics': return 'col_metallics'.tr();
+      default: return cat;
+    }
+  }
 
   final List<Map<String, String>> _categories = const [
     {
@@ -335,7 +404,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                           ),
                         ),
                         child: Text(
-                          'Continue',
+                          'continue_btn'.tr(),
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
@@ -367,7 +436,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Category',
+              'category'.tr(),
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
@@ -390,7 +459,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _selectedCategory,
+                    _translateCategory(_selectedCategory),
                     style: TextStyle(
                       fontSize: 13.5.sp,
                       fontWeight: FontWeight.w600,
@@ -490,7 +559,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                           ),
                         ),
                         child: Text(
-                          item['title']!,
+                          _translateCategory(item['title']!),
                           textAlign: TextAlign.center,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -523,7 +592,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Pattern',
+          'pattern'.tr(),
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,
@@ -584,7 +653,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                       SizedBox(width: 8.w),
 
                       Text(
-                        pattern['name']!,
+                        _translatePattern(pattern['name']!),
                         style: TextStyle(
                           fontSize: 13.5.sp,
                           fontWeight:
@@ -621,7 +690,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Colors',
+              'colors'.tr(),
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
@@ -637,7 +706,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: Text(
-                'Multicolor',
+                'multicolor'.tr(),
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
@@ -671,7 +740,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      catName,
+                      _translateColorCategory(catName),
                       style: TextStyle(
                         fontSize: 14.5.sp,
                         fontWeight:
@@ -739,7 +808,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                   child: Row(
                     children: [
                       Text(
-                        colorName,
+                        AppLocalizationHelper.translateColorName(context, colorName),
                         style: TextStyle(
                           fontSize: 13.5.sp,
                           fontWeight:
@@ -807,7 +876,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Sleeve',
+                    'sleeve'.tr(),
                     style: TextStyle(
                       fontSize: 17.sp,
                       fontWeight: FontWeight.w700,
@@ -876,7 +945,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                           SizedBox(width: 12.w),
 
                           Text(
-                            sleeve,
+                            _translateSleeve(sleeve),
                             style: TextStyle(
                               fontSize: 14.sp,
                               fontWeight: isSelected
@@ -908,7 +977,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Fit',
+          'fit'.tr(),
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,
@@ -950,7 +1019,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
                       ),
                     ),
                     child: Text(
-                      fit,
+                      _translateFit(fit),
                       style: TextStyle(
                         fontSize: 14.5.sp,
                         fontWeight:

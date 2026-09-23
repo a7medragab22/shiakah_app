@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -29,11 +30,11 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-            SizedBox(width: 10),
-            Text('Item added to My Closet!'),
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Text('item_added_closet'.tr()),
           ],
         ),
         backgroundColor: const Color(0xFF388E3C),
@@ -113,7 +114,7 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
                                 ),
                                 SizedBox(height: 12.h),
                                 Text(
-                                  'Photo Preview',
+                                  'ready_for_analysis'.tr(),
                                   style: TextStyle(
                                     fontSize: 16.sp,
                                     color: AppColors.secondary,
@@ -198,7 +199,7 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          'Ready for analysis',
+                          'ready_for_analysis'.tr(),
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
@@ -210,7 +211,7 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
 
                     // Text: "your photo is ready to analyze"
                     Text(
-                      'your photo is ready to analyze',
+                      'your_photo_ready'.tr(),
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
@@ -237,7 +238,7 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
                                 ),
                               ),
                               child: Text(
-                                'Add to My Closet',
+                                'add_to_closet'.tr(),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13.sp,
@@ -264,7 +265,7 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
                                 ),
                               ),
                               child: Text(
-                                'Analyze Item',
+                                'analyze_item'.tr(),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13.sp,
@@ -293,7 +294,7 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
                             ),
                             SizedBox(width: 6.w),
                             Text(
-                              'Retake',
+                              'retake'.tr(),
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w600,

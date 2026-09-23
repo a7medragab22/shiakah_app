@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -112,33 +113,6 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
       // Return true to parent if saved
       Navigator.pop(context, true);
     }
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 6.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13.5.sp,
-              color: const Color(0xFF8E8883),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -387,7 +361,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
 
                   // Right: Summer Essentials Tag
                   Text(
-                    'Summer Essentials',
+                    'summer_essentials'.tr(),
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
@@ -540,7 +514,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                         ),
                       ),
                       child: Text(
-                        'More Details',
+                        'more_details'.tr(),
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,

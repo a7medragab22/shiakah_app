@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
@@ -49,7 +50,7 @@ class CameraAccessBottomSheet extends StatelessWidget {
                 ),
               ),
               Text(
-                'Select Clothing Image',
+                'choose_image'.tr(),
                 style: TextStyle(
                   fontSize: 17.sp,
                   fontWeight: FontWeight.w700,
@@ -71,7 +72,7 @@ class CameraAccessBottomSheet extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  'Camera',
+                  'camera'.tr(),
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
@@ -79,7 +80,7 @@ class CameraAccessBottomSheet extends StatelessWidget {
                   ),
                 ),
                 subtitle: Text(
-                  'Take a photo of your clothing item',
+                  'camera_sub'.tr(),
                   style:
                       TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                 ),
@@ -132,7 +133,7 @@ class CameraAccessBottomSheet extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  'Choose from Gallery',
+                  'choose_from_gallery'.tr(),
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
@@ -140,7 +141,7 @@ class CameraAccessBottomSheet extends StatelessWidget {
                   ),
                 ),
                 subtitle: Text(
-                  'Select an existing image from photos',
+                  'gallery_sub'.tr(),
                   style:
                       TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                 ),
@@ -208,7 +209,7 @@ class CameraAccessBottomSheet extends StatelessWidget {
 
             // Title: Allow Camera Access
             Text(
-              'Allow Camera Access',
+              'allow_camera'.tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 20.sp,
@@ -222,7 +223,7 @@ class CameraAccessBottomSheet extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 12.w),
               child: Text(
-                'Scan your clothing to automatically identify item details.',
+                'scan_clothing_desc'.tr(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13.5.sp,
@@ -253,7 +254,7 @@ class CameraAccessBottomSheet extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Not now',
+                        'not_now'.tr(),
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
@@ -279,7 +280,7 @@ class CameraAccessBottomSheet extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Continue',
+                        'continue_btn'.tr(),
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w700,

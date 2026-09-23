@@ -1,9 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/extensions/extensions.dart';
+import '../../../../core/localization/app_localization_helper.dart';
 import '../../../../core/theme/theme.dart';
 import '../cubit/weather_cubit.dart';
 import '../cubit/weather_state.dart';
@@ -12,20 +15,54 @@ import '../../data/models/weather_model.dart';
 class WeatherCardWidget extends StatelessWidget {
   const WeatherCardWidget({super.key});
 
-  String _formatDate(String dateStr) {
-    try {
-      final dt = DateTime.tryParse(dateStr) ?? DateTime.now();
-      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      final weekday = weekdays[dt.weekday - 1];
-      final month = months[dt.month - 1];
-      return '$weekday • $month ${dt.day}';
-    } catch (_) {
-      final dt = DateTime.now();
-      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return '${weekdays[dt.weekday - 1]} • ${months[dt.month - 1]} ${dt.day}';
+  String _formatDate(BuildContext context, String? dateStr) {
+    final dt = _safeParseDate(dateStr);
+    final isAr = context.isArabic;
+    const weekdaysEn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const weekdaysAr = ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
+    const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthsAr = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    final weekday = isAr ? weekdaysAr[dt.weekday - 1] : weekdaysEn[dt.weekday - 1];
+    final month = isAr ? monthsAr[dt.month - 1] : monthsEn[dt.month - 1];
+    return isAr ? '$weekday، ${dt.day} $month' : '$weekday • $month ${dt.day}';
+  }
+
+  String _localizeCondition(BuildContext context, String condition) {
+    if (!context.isArabic) return condition;
+    final cond = condition.toLowerCase();
+    if (cond.contains('sunny')) return 'مشمس';
+    if (cond.contains('clear')) return 'صافٍ';
+    if (cond.contains('partly')) return 'غائم جزئياً';
+    if (cond.contains('cloud') || cond.contains('overcast')) return 'غائم';
+    if (cond.contains('thunder') || cond.contains('storm')) return 'عاصفة رعدية';
+    if (cond.contains('rain') || cond.contains('drizzle') || cond.contains('shower')) return 'ممطر';
+    if (cond.contains('snow') || cond.contains('ice') || cond.contains('sleet') || cond.contains('blizzard')) return 'ثلوج';
+    if (cond.contains('mist') || cond.contains('fog')) return 'ضباب';
+    if (cond.contains('wind') || cond.contains('breeze')) return 'عاصف';
+    return condition;
+  }
+
+  static DateTime _safeParseDate(String? dateStr) {
+    if (dateStr == null || dateStr.trim().isEmpty) {
+      return DateTime.now();
     }
+    final trimmed = dateStr.trim();
+    // Fast path: parse YYYY-MM-DD safely using int.tryParse to avoid FormatException in DateTime.parse
+    final parts = trimmed.split(RegExp(r'[-/ T]'));
+    if (parts.length >= 3) {
+      final y = int.tryParse(parts[0]);
+      final m = int.tryParse(parts[1]);
+      final d = int.tryParse(parts[2]);
+      if (y != null && m != null && d != null && m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+        return DateTime(y, m, d);
+      }
+    }
+    // Only attempt tryParse if it looks like an ISO date
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(trimmed)) {
+      final parsed = DateTime.tryParse(trimmed);
+      if (parsed != null) return parsed;
+    }
+    return DateTime.now();
   }
 
   IconData _getWeatherIconData(String condition) {
@@ -69,15 +106,15 @@ class WeatherCardWidget extends StatelessWidget {
   String _getWeatherRecommendation(double tempC, String condition) {
     final lowerCond = condition.toLowerCase();
     if (lowerCond.contains('rain') || lowerCond.contains('drizzle') || lowerCond.contains('thunder')) {
-      return 'Rain expected. Don\'t forget your umbrella and waterproof outerwear.';
+      return 'weather_rec_rain'.tr();
     } else if (tempC >= 32) {
-      return 'Very warm weather. Light, breathable cotton outfits recommended.';
+      return 'weather_rec_hot'.tr();
     } else if (tempC >= 22) {
-      return 'Comfortable weather for everyday styling.';
+      return 'weather_rec_comfortable'.tr();
     } else if (tempC >= 14) {
-      return 'Mild weather. Perfect for light jacket or layered outfits.';
+      return 'weather_rec_mild'.tr();
     } else {
-      return 'Chilly weather. Consider warm sweater or heavy jacket.';
+      return 'weather_rec_cold'.tr();
     }
   }
 
@@ -163,7 +200,7 @@ class WeatherCardWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _formatDate(weather.dateString),
+                        _formatDate(context, weather.dateString),
                         style: TextStyle(
                           fontSize: 13.5.sp,
                           fontWeight: FontWeight.w500,
@@ -192,7 +229,11 @@ class WeatherCardWidget extends StatelessWidget {
                             ),
                           SizedBox(width: 4.w),
                           Text(
-                            '${weather.cityName}, ${weather.countryName}',
+                            AppLocalizationHelper.formatLocation(
+                              context,
+                              weather.cityName,
+                              weather.countryName,
+                            ),
                             style: TextStyle(
                               fontSize: 13.5.sp,
                               fontWeight: FontWeight.w600,
@@ -216,7 +257,7 @@ class WeatherCardWidget extends StatelessWidget {
                           _buildWeatherIcon(weather),
                           SizedBox(width: 8.w),
                           Text(
-                            weather.conditionText,
+                            _localizeCondition(context, weather.conditionText),
                             style: TextStyle(
                               fontSize: 20.sp,
                               fontWeight: FontWeight.w600,
@@ -241,7 +282,7 @@ class WeatherCardWidget extends StatelessWidget {
                           ),
                           SizedBox(height: 4.h),
                           Text(
-                            'H:${weather.maxTempC.round()}°   L:${weather.minTempC.round()}°',
+                            '${'high_short'.tr()}:${weather.maxTempC.round()}°   ${'low_short'.tr()}:${weather.minTempC.round()}°',
                             style: TextStyle(
                               fontSize: 12.5.sp,
                               fontWeight: FontWeight.w500,
@@ -327,7 +368,7 @@ class WeatherCardWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Failed to load weather data',
+            'weather_error'.tr(),
             style: TextStyle(
               fontSize: 14.sp,
               color: AppColors.secondary,
@@ -337,7 +378,7 @@ class WeatherCardWidget extends StatelessWidget {
             onPressed: () {
               context.read<WeatherCubit>().fetchWeather(isRefresh: true);
             },
-            child: const Text('Retry'),
+            child: Text('retry'.tr()),
           ),
         ],
       ),

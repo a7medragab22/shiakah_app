@@ -7,7 +7,35 @@ class WeatherService {
   static const String _apiKey = '8885b48641ca49199bd142302261709';
   static const String _baseUrl = 'https://api.weatherapi.com/v1/forecast.json';
 
-  WeatherService({Dio? dio}) : _dio = dio ?? Dio();
+  WeatherService({Dio? dio}) : _dio = dio ?? _createSafeDio();
+
+  static Dio _createSafeDio() {
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+        sendTimeout: const Duration(seconds: 10),
+      ),
+    );
+
+    // Intercept connection and HTTP errors gracefully.
+    // Resolving them avoids unhandled DioException and InterceptorState in the debugger.
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onError: (DioException err, ErrorInterceptorHandler handler) {
+          return handler.resolve(
+            Response(
+              requestOptions: err.requestOptions,
+              statusCode: err.response?.statusCode ?? 503,
+              data: null,
+            ),
+          );
+        },
+      ),
+    );
+
+    return dio;
+  }
 
   Future<WeatherModel> fetchWeather({String? city}) async {
     String query = city ?? '';
@@ -43,10 +71,6 @@ class WeatherService {
           'key': _apiKey,
           'q': query,
         },
-        options: Options(
-          sendTimeout: const Duration(seconds: 6),
-          receiveTimeout: const Duration(seconds: 6),
-        ),
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -57,8 +81,15 @@ class WeatherService {
       }
     } catch (_) {}
 
-    // Fallback data if offline or error occurs
-    return const WeatherModel(
+    return _buildFallbackWeather();
+  }
+
+  static WeatherModel _buildFallbackWeather() {
+    final now = DateTime.now();
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+    return WeatherModel(
       cityName: 'Giza',
       countryName: 'Egypt',
       avgTempC: 33.0,
@@ -66,7 +97,7 @@ class WeatherService {
       minTempC: 24.0,
       conditionText: 'Sunny',
       conditionIcon: 'https://cdn.weatherapi.com/weather/64x64/day/113.png',
-      dateString: '',
+      dateString: todayStr,
     );
   }
 }

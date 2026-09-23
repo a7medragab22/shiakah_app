@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/localization/app_localization_helper.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../profile/presentation/screens/item_details_screen.dart';
 
@@ -29,17 +31,17 @@ class AiDetectedScreen extends StatefulWidget {
 class _AiDetectedScreenState extends State<AiDetectedScreen> {
   String _selectedOccasion = 'Casual';
 
-  final List<String> _occasions = const [
-    'Casual',
-    'Office',
-    'Formal',
-    'Wedding',
-    'Date Night',
-    'Interview',
-    'Travel',
-    'Party',
-    'Gym',
-    'AI Pick',
+  final List<Map<String, String>> _occasions = const [
+    {'id': 'Casual', 'key': 'casual'},
+    {'id': 'Office', 'key': 'business_formal'},
+    {'id': 'Formal', 'key': 'business_formal'},
+    {'id': 'Wedding', 'key': 'classic'},
+    {'id': 'Date Night', 'key': 'smart_casual'},
+    {'id': 'Interview', 'key': 'business_formal'},
+    {'id': 'Travel', 'key': 'casual'},
+    {'id': 'Party', 'key': 'streetwear'},
+    {'id': 'Gym', 'key': 'sportswear'},
+    {'id': 'AI Pick', 'key': 'smart_casual'},
   ];
 
   @override
@@ -145,7 +147,7 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
                                   ),
                                   SizedBox(width: 8.w),
                                   Text(
-                                    'AI Detected',
+                                    'ai_detected'.tr(),
                                     style: TextStyle(
                                       fontSize: 20.sp,
                                       fontWeight: FontWeight.w700,
@@ -155,7 +157,7 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
                                 ],
                               ),
                               Text(
-                                'Review All',
+                                'review_all'.tr(),
                                 style: TextStyle(
                                   fontSize: 13.5.sp,
                                   fontWeight: FontWeight.w500,
@@ -171,33 +173,33 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
 
                           // ── Attributes Rows ─────────────────────────
                           _buildAttributeRow(
-                            label: 'Category:',
-                            value: widget.categoryTitle,
+                            label: '${'category'.tr()}:',
+                            value: AppLocalizationHelper.translateCategory(context, widget.categoryTitle),
                           ),
                           Divider(color: const Color(0xFFEFECE8), height: 1.h),
 
                           _buildAttributeRow(
-                            label: 'Fit:',
-                            value: widget.fitName,
+                            label: '${'fit'.tr()}:',
+                            value: AppLocalizationHelper.translateFit(context, widget.fitName),
                           ),
                           Divider(color: const Color(0xFFEFECE8), height: 1.h),
 
                           _buildColorAttributeRow(
-                            label: 'Colors Found:',
-                            colorName: widget.colorName,
+                            label: '${'colors_found'.tr()}:',
+                            colorName: AppLocalizationHelper.translateColorName(context, widget.colorName),
                             colorHex: widget.colorHex,
                           ),
                           Divider(color: const Color(0xFFEFECE8), height: 1.h),
 
                           _buildAttributeRow(
-                            label: 'Pattern:',
-                            value: widget.patternName,
+                            label: '${'pattern'.tr()}:',
+                            value: AppLocalizationHelper.translatePattern(context, widget.patternName),
                           ),
                           SizedBox(height: 24.h),
 
                           // ── Occasion Selection Section ───────────────────────
                           Text(
-                            'How would you like to wear it?',
+                            'wear_question'.tr(),
                             style: TextStyle(
                               fontSize: 17.5.sp,
                               fontWeight: FontWeight.w700,
@@ -211,11 +213,11 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
                             spacing: 10.w,
                             runSpacing: 10.h,
                             children: _occasions.map((occasion) {
-                              final isSelected = occasion == _selectedOccasion;
+                              final isSelected = occasion['id'] == _selectedOccasion;
                               return GestureDetector(
                                 onTap: () {
                                   setState(() {
-                                    _selectedOccasion = occasion;
+                                    _selectedOccasion = occasion['id']!;
                                   });
                                 },
                                 child: AnimatedContainer(
@@ -237,7 +239,7 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    occasion,
+                                    occasion['key']!.tr(),
                                     style: TextStyle(
                                       fontSize: 15.sp,
                                       fontWeight: isSelected
@@ -275,7 +277,7 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
                                 ),
                               ),
                               child: Text(
-                                'Generate Outfits',
+                                'generate_outfits'.tr(),
                                 style: TextStyle(
                                   fontSize: 16.5.sp,
                                   fontWeight: FontWeight.w700,

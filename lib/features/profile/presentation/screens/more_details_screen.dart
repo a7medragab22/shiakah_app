@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -27,9 +28,9 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
         widget.onSaveToCloset!(widget.imagePath ?? 'assets/images/man.png');
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Item saved to My Closet successfully!'),
-          backgroundColor: Color(0xFF388E3C),
+        SnackBar(
+          content: Text('item_saved_success'.tr()),
+          backgroundColor: const Color(0xFF388E3C),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -192,7 +193,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
 
                   // ── 3. Your Item Horizontal Row ────────────────────────────
                   Text(
-                    'Your Item',
+                    'your_item'.tr(),
                     style: TextStyle(
                       fontSize: 13.5.sp,
                       fontWeight: FontWeight.w600,
@@ -209,19 +210,19 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                       children: [
                         _buildYourItemCard(
                           icon: Icons.checkroom_rounded,
-                          label: 'Off-White Tee',
+                          label: 'off_white_tee'.tr(),
                         ),
                         _buildYourItemCard(
                           icon: Icons.dry_cleaning_rounded,
-                          label: 'Beige Short',
+                          label: 'beige_short'.tr(),
                         ),
                         _buildYourItemCard(
                           icon: Icons.roller_skating_outlined,
-                          label: 'Off-White Sneaker',
+                          label: 'off_white_sneaker'.tr(),
                         ),
                         _buildYourItemCard(
                           icon: Icons.watch_rounded,
-                          label: 'Brown Leather Watch',
+                          label: 'brown_leather_watch'.tr(),
                         ),
                       ],
                     ),
@@ -285,7 +286,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Save this item to My Closet',
+                                'save_to_closet_checkbox'.tr(),
                                 style: TextStyle(
                                   fontSize: 14.5.sp,
                                   fontWeight: FontWeight.w700,
@@ -294,7 +295,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                'Keep this item for future outfit recommendations.',
+                                'save_to_closet_desc'.tr(),
                                 style: TextStyle(
                                   fontSize: 11.5.sp,
                                   fontWeight: FontWeight.w400,
@@ -323,7 +324,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                         ),
                       ),
                       child: Text(
-                        'Done Styling',
+                        'done_styling'.tr(),
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
@@ -411,7 +412,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'AI Match Analysis',
+            'ai_match_analysis'.tr(),
             style: TextStyle(
               fontSize: 16.5.sp,
               fontWeight: FontWeight.w800,
@@ -420,7 +421,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
           ),
           SizedBox(height: 3.h),
           Text(
-            'AI evaluation based on style, comfort, and color harmony.',
+            'ai_match_desc'.tr(),
             style: TextStyle(
               fontSize: 12.sp,
               color: const Color(0xFF8E8883),
@@ -429,13 +430,13 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
           SizedBox(height: 12.h),
 
           // Analysis Row Items
-          _buildAnalysisRow('Color Harmony', 'Excellent', const Color(0xFFE8F5E9), const Color(0xFF4CAF50)),
+          _buildAnalysisRow('color_harmony'.tr(), 'excellent'.tr(), const Color(0xFFE8F5E9), const Color(0xFF4CAF50)),
           const Divider(height: 14),
-          _buildAnalysisRow('Style Consistency', 'Excellent', const Color(0xFFE8F5E9), const Color(0xFF4CAF50)),
+          _buildAnalysisRow('style_consistency'.tr(), 'excellent'.tr(), const Color(0xFFE8F5E9), const Color(0xFF4CAF50)),
           const Divider(height: 14),
-          _buildAnalysisRow('Comfort Level', 'Very Comfortable', const Color(0xFFFFF8E1), const Color(0xFFFFA000)),
+          _buildAnalysisRow('comfort_level'.tr(), 'very_comfortable'.tr(), const Color(0xFFFFF8E1), const Color(0xFFFFA000)),
           const Divider(height: 14),
-          _buildAnalysisRow('Weather Suitability', 'Warm Weather', const Color(0xFFFFF3E0), const Color(0xFFE65100)),
+          _buildAnalysisRow('weather_suitability'.tr(), 'warm_weather'.tr(), const Color(0xFFFFF3E0), const Color(0xFFE65100)),
         ],
       ),
     );
@@ -491,7 +492,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Occasion Suitability',
+            'occasion_suitability'.tr(),
             style: TextStyle(
               fontSize: 16.5.sp,
               fontWeight: FontWeight.w800,
@@ -506,7 +507,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
               Icon(Icons.thumb_up_alt_outlined, size: 15.sp, color: const Color(0xFF8E8883)),
               SizedBox(width: 6.w),
               Text(
-                'Recommended',
+                'recommended'.tr(),
                 style: TextStyle(
                   fontSize: 12.5.sp,
                   fontWeight: FontWeight.w600,
@@ -520,11 +521,11 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
             spacing: 6.w,
             runSpacing: 6.h,
             children: [
-              _buildChip('Coffee', isRecommended: true),
-              _buildChip('Shopping', isRecommended: true),
-              _buildChip('Walking', isRecommended: true),
-              _buildChip('Summer', isRecommended: true),
-              _buildChip('Travel', isRecommended: true),
+              _buildChip('coffee'.tr(), isRecommended: true),
+              _buildChip('shopping'.tr(), isRecommended: true),
+              _buildChip('walking'.tr(), isRecommended: true),
+              _buildChip('summer'.tr(), isRecommended: true),
+              _buildChip('travel'.tr(), isRecommended: true),
             ],
           ),
 
@@ -536,7 +537,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
               Icon(Icons.info_outline_rounded, size: 15.sp, color: const Color(0xFF8E8883)),
               SizedBox(width: 6.w),
               Text(
-                'Not Recommended',
+                'not_recommended'.tr(),
                 style: TextStyle(
                   fontSize: 12.5.sp,
                   fontWeight: FontWeight.w600,
@@ -550,8 +551,8 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
             spacing: 6.w,
             runSpacing: 6.h,
             children: [
-              _buildChip('Formal Events', isRecommended: false),
-              _buildChip('Business Meetings', isRecommended: false),
+              _buildChip('formal_events'.tr(), isRecommended: false),
+              _buildChip('business_meetings'.tr(), isRecommended: false),
             ],
           ),
         ],
@@ -596,7 +597,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Why AI Picked This?',
+            'why_ai_picked'.tr(),
             style: TextStyle(
               fontSize: 16.5.sp,
               fontWeight: FontWeight.w800,
@@ -604,13 +605,13 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
             ),
           ),
           SizedBox(height: 12.h),
-          _buildCheckItem('Neutral colors create a clean appearance.'),
+          _buildCheckItem('ai_reason_1'.tr()),
           SizedBox(height: 8.h),
-          _buildCheckItem('Lightweight pieces keep you comfortable.'),
+          _buildCheckItem('ai_reason_2'.tr()),
           SizedBox(height: 8.h),
-          _buildCheckItem('Versatile enough for multiple casual occasions.'),
+          _buildCheckItem('ai_reason_3'.tr()),
           SizedBox(height: 8.h),
-          _buildCheckItem('Timeless style that won\'t go out of fashion.'),
+          _buildCheckItem('ai_reason_4'.tr()),
         ],
       ),
     );
@@ -664,7 +665,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Weather Fit',
+            'weather_fit'.tr(),
             style: TextStyle(
               fontSize: 16.5.sp,
               fontWeight: FontWeight.w800,
@@ -678,7 +679,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
               SizedBox(width: 6.w),
               Expanded(
                 child: Text(
-                  'Excellent choice for today\'s warm and sunny weather.',
+                  'weather_fit_desc'.tr(),
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w500,
@@ -696,7 +697,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
               Expanded(
                 child: _buildMetricBox(
                   icon: Icons.thermostat_rounded,
-                  label: 'Ideal Temperature',
+                  label: 'ideal_temperature'.tr(),
                   val: '22° - 34°C',
                   valColor: const Color(0xFFE5A638),
                 ),
@@ -705,8 +706,8 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
               Expanded(
                 child: _buildMetricBox(
                   icon: Icons.wb_sunny_outlined,
-                  label: 'Best Seasons',
-                  val: 'Spring & Summer',
+                  label: 'best_seasons'.tr(),
+                  val: 'spring_and_summer'.tr(),
                   valColor: const Color(0xFFE5A638),
                 ),
               ),
@@ -718,8 +719,8 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
               Expanded(
                 child: _buildMetricBox(
                   icon: Icons.sentiment_very_satisfied_rounded,
-                  label: 'Breathability',
-                  val: 'Excellent',
+                  label: 'breathability'.tr(),
+                  val: 'excellent'.tr(),
                   valColor: const Color(0xFF4CAF50),
                 ),
               ),
@@ -727,8 +728,8 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
               Expanded(
                 child: _buildMetricBox(
                   icon: Icons.sentiment_satisfied_alt_rounded,
-                  label: 'Comfort Level',
-                  val: 'Very Comfortable',
+                  label: 'comfort_level'.tr(),
+                  val: 'very_comfortable'.tr(),
                   valColor: const Color(0xFFE5A638),
                 ),
               ),

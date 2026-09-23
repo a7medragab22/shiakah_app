@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -43,16 +44,13 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
 
             // ── White form card ──────────────────────────────────────────
-            // AuthFormCard already handles scrolling via LayoutBuilder + SingleChildScrollView
-            // + IntrinsicHeight, allowing Spacer() to expand properly without exception!
             AuthFormCard(
               child: Column(
                 children: [
                   // Logo + title + subtitle
                   AuthLogoSection(
-                    title: 'Welcome Back',
-                    subtitle:
-                        'Sign in to continue your personalized styling experience.',
+                    title: 'welcome_back'.tr(),
+                    subtitle: 'sign_in_subtitle'.tr(),
                   ),
 
                   SizedBox(height: 20.h),
@@ -60,8 +58,8 @@ class _SignInScreenState extends State<SignInScreen> {
                   // Gmail Input Field
                   CustomAuthInputField(
                     controller: _gmailController,
-                    label: 'Gmail',
-                    hintText: 'example@gmail.com',
+                    label: 'gmail'.tr(),
+                    hintText: 'gmail_hint'.tr(),
                     keyboardType: TextInputType.emailAddress,
                     prefixIcon: Icons.mail_outline_rounded,
                   ),
@@ -71,18 +69,17 @@ class _SignInScreenState extends State<SignInScreen> {
                   // Password Input Field with Eye Toggle Suffix Icon
                   CustomAuthInputField(
                     controller: _passwordController,
-                    label: 'Password',
-                    hintText: '••••••••',
+                    label: 'password'.tr(),
+                    hintText: 'password_hint'.tr(),
                     isPassword: true,
                     prefixIcon: Icons.lock_outline_rounded,
                   ),
 
-                  // Spacer works perfectly inside AuthFormCard!
                   const Spacer(),
 
                   // Continue button → Go straight to HOME (Routes.home)
                   AuthPrimaryButton(
-                    label: 'Continue',
+                    label: 'continue_btn'.tr(),
                     onPressed: () => context.go(Routes.home),
                   ),
 
@@ -90,8 +87,8 @@ class _SignInScreenState extends State<SignInScreen> {
 
                   // Footer link
                   AuthFooterLink(
-                    prefixText: 'New to SHIAKAH? ',
-                    linkText: 'Create an account',
+                    prefixText: 'new_to_shiakah'.tr(),
+                    linkText: 'create_an_account'.tr(),
                     onTap: () => context.go(Routes.register),
                   ),
 

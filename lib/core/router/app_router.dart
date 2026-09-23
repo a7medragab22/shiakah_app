@@ -85,6 +85,7 @@ abstract interface class AppRouter {
     } else {
       return MaterialApp.router(
         scaffoldMessengerKey: scaffoldMessengerKey,
+        debugShowCheckedModeBanner: false,
         routerConfig: router,
         title: 'Flutter Demo',
         theme: ThemeData.light(),

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/extensions/extensions.dart';
 import '../../../../core/local_storage/local_storage.dart';
+import '../../../../core/localization/locales.dart';
 import '../../../../core/router/router.dart';
 import '../../../../core/theme/theme.dart';
 
@@ -43,12 +45,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
           child: Column(
             children: [
-              // Top Bar with Skip Button
+              // Top Bar with Skip Button & Globe Language Button at Top Right
               SizedBox(
-                height: 32.h,
+                height: 38.h,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Skip button
                     if (_currentIndex < 2)
                       GestureDetector(
                         onTap: _finishOnboarding,
@@ -62,7 +65,49 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             decorationColor: const Color(0xFF8E8883),
                           ),
                         ),
+                      )
+                    else
+                      const SizedBox.shrink(),
+
+                    // Globe Language Button at Top Right
+                    InkWell(
+                      onTap: () {
+                        context.setLocale(
+                          context.isArabic ? Locales.english : Locales.arabic,
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(20.r),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(
+                            color: const Color(0xFFD6C9B8),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.language_rounded,
+                              size: 18.sp,
+                              color: AppColors.primary,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              context.isArabic ? 'EN' : 'عربي',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -154,7 +199,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Discover Your Perfect Style'.tr(),
+                    'onboarding_title_1'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 26.sp,
@@ -167,8 +212,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 14.w),
                     child: Text(
-                      'Find outfits that match your personality, preferences, and every occasion.'
-                          .tr(),
+                      'onboarding_subtitle_1'.tr(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16.sp,
@@ -245,7 +289,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Style Smarter with AI'.tr(),
+                    'onboarding_title_2'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 26.sp,
@@ -258,8 +302,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: Text(
-                      'Snap or upload any clothing item and get outfit recommendations tailored just for you. '
-                          .tr(),
+                      'onboarding_subtitle_2'.tr(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16.sp,
@@ -330,7 +373,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'See It on You First'.tr(),
+                    'onboarding_title_3'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 26.sp,
@@ -343,8 +386,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: Text(
-                      'Preview personalized outfits on your avatar with recommendations tailored to today’  s weather and every occasion.'
-                          .tr(),
+                      'onboarding_subtitle_3'.tr(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16.sp,
@@ -414,7 +456,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
             child: Text(
-              _currentIndex == 2 ? 'Get started'.tr() : 'Next'.tr(),
+              _currentIndex == 2 ? 'get_started'.tr() : 'next'.tr(),
               style: TextStyle(
                 fontSize: 17.sp,
                 fontWeight: FontWeight.w600,

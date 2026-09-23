@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -36,7 +37,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           AuthHeader(
             type: AuthHeaderType.image,
             imagePath: 'assets/images/cloths.jpg',
-            title: 'Create Account',
+            title: 'create_account_title'.tr(),
             fallbackRoute: Routes.welcome,
             height: 230.h,
           ),
@@ -47,10 +48,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               children: [
                 // Logo + title + subtitle
                 AuthLogoSection(
-                  title: 'Create Your Account',
-                  subtitle:
-                      'Enter your phone number to receive a verification code '
-                      'and start your AI fashion journey.',
+                  title: 'create_your_account'.tr(),
+                  subtitle: 'sign_up_subtitle'.tr(),
                 ),
 
                 SizedBox(height: 24.h),
@@ -58,23 +57,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 // Phone input
                 CustomAuthInputField(
                   controller: _gmailController,
-                  label: 'Gmail',
-                  hintText: 'example@gmail.com',
+                  label: 'gmail'.tr(),
+                  hintText: 'gmail_hint'.tr(),
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: Icons.mail_outline_rounded,
                 ),
                 SizedBox(height: 14.h),
                 CustomAuthInputField(
                   controller: _passwordController,
-                  label: 'Password',
-                  hintText: '••••••••',
+                  label: 'password'.tr(),
+                  hintText: 'password_hint'.tr(),
                   isPassword: true,
                   prefixIcon: Icons.lock_outline_rounded,
                 ),
-                Spacer(),
+                const Spacer(),
                 // Continue button → Verify OTP
                 AuthPrimaryButton(
-                  label: 'Continue',
+                  label: 'continue_btn'.tr(),
                   onPressed: () => context.go(Routes.verifyOtp),
                 ),
 
@@ -82,8 +81,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 // Footer link
                 AuthFooterLink(
-                  prefixText: 'Already have an account? ',
-                  linkText: 'Sign In',
+                  prefixText: 'already_have_an_account'.tr(),
+                  linkText: 'sign_in'.tr(),
                   onTap: () => context.go(Routes.login),
                 ),
 

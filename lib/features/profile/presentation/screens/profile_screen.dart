@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/helpers/helpers.dart';
+import '../../../../core/localization/app_localization_helper.dart';
 import '../../../../core/theme/theme.dart';
 import 'item_details_screen.dart';
 
@@ -209,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   SizedBox(width: 10.w),
                   Text(
-                    'Amgad Shallan',
+                    AppLocalizationHelper.getUserFullName(context),
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
@@ -275,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      'My Closet',
+                      'my_closet'.tr(),
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -327,7 +329,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      'My Looks',
+                      'my_looks'.tr(),
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -375,7 +377,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
-                  'My Closet',
+                  'my_closet'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15.sp,
@@ -405,7 +407,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
-                  'My Looks',
+                  'my_looks'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15.sp,

@@ -36,6 +36,13 @@ class WeatherModel {
     if (iconUrl.startsWith('//')) {
       iconUrl = 'https:$iconUrl';
     }
+    final now = DateTime.now();
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final rawDate = firstDayMap['date']?.toString();
+    final dateString = (rawDate != null && rawDate.trim().isNotEmpty)
+        ? rawDate.trim()
+        : todayStr;
 
     return WeatherModel(
       cityName: location['name']?.toString() ?? 'Giza',
@@ -47,7 +54,7 @@ class WeatherModel {
       minTempC: (dayMap['mintemp_c'] as num?)?.toDouble() ?? 25.0,
       conditionText: conditionMap['text']?.toString() ?? 'Sunny',
       conditionIcon: iconUrl,
-      dateString: firstDayMap['date']?.toString() ?? '',
+      dateString: dateString,
     );
   }
 }

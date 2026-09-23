@@ -1,7 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/extensions/extensions.dart';
+import '../../../../core/localization/app_localization_helper.dart';
+import '../../../../core/localization/locales.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../cubit/weather_cubit.dart';
@@ -41,7 +45,7 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── 1. Top Header (Profile + Greeting + Notification & User Icons) ──
+                      // ── 1. Top Header (Profile + Greeting + Notification & Language & User Icons) ──
                       _buildHeader(context),
                       SizedBox(height: 18.h),
 
@@ -60,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                       // Sub-text under action cards
                       Center(
                         child: Text(
-                          'Scanning is faster and you can edit everything before saving.',
+                          'scanning_note'.tr(),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12.sp,
@@ -117,7 +121,7 @@ class HomeScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Good Morning,',
+                    'good_morning'.tr(),
                     style: TextStyle(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w400,
@@ -125,7 +129,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Amgad',
+                    AppLocalizationHelper.getUserDisplayName(context),
                     style: TextStyle(
                       fontSize: 17.sp,
                       fontWeight: FontWeight.w700,
@@ -138,9 +142,33 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
 
-        // Right Side: Notification Bell & Profile Buttons
+        // Right Side: Globe Language Switcher + Notification Bell & Profile Buttons
         Row(
           children: [
+            // Globe Language Button (next to Notification icon)
+            Container(
+              width: 42.w,
+              height: 42.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF6F2EC),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: IconButton(
+                onPressed: () {
+                  context.setLocale(
+                    context.isArabic ? Locales.english : Locales.arabic,
+                  );
+                },
+                icon: Icon(
+                  Icons.language_rounded,
+                  color: AppColors.primary,
+                  size: 22.sp,
+                ),
+                padding: EdgeInsets.zero,
+              ),
+            ),
+            SizedBox(width: 8.w),
+
             // Bell Button
             Container(
               width: 42.w,
@@ -211,7 +239,7 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Today's Style Guide",
+            "today_style_guide".tr(),
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.w800,
@@ -220,7 +248,7 @@ class HomeScreen extends StatelessWidget {
           ),
           SizedBox(height: 4.h),
           Text(
-            'A few things to keep in mind before choosing today\'s outfit.',
+            'style_guide_subtitle'.tr(),
             style: TextStyle(
               fontSize: 12.5.sp,
               fontWeight: FontWeight.w400,
@@ -230,11 +258,11 @@ class HomeScreen extends StatelessWidget {
           SizedBox(height: 16.h),
 
           // Checklist Items
-          _buildChecklistItem('Light colors are a comfortable choice today.'),
+          _buildChecklistItem('style_guide_check_1'.tr()),
           SizedBox(height: 10.h),
-          _buildChecklistItem('Lightweight fabrics are recommended.'),
+          _buildChecklistItem('style_guide_check_2'.tr()),
           SizedBox(height: 10.h),
-          _buildChecklistItem('Cooler temperatures are expected tonight.'),
+          _buildChecklistItem('style_guide_check_3'.tr()),
         ],
       ),
     );
@@ -326,7 +354,7 @@ class HomeScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Add Clothing',
+                        'add_clothing'.tr(),
                         style: TextStyle(
                           fontSize: 16.5.sp,
                           fontWeight: FontWeight.w800,
@@ -335,7 +363,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        'Scan a clothing item using your camera or gallery.',
+                        'add_clothing_sub'.tr(),
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontWeight: FontWeight.w400,
@@ -409,7 +437,7 @@ class HomeScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Add Manually',
+                        'add_manually'.tr(),
                         style: TextStyle(
                           fontSize: 16.5.sp,
                           fontWeight: FontWeight.w700,
@@ -418,7 +446,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        'Enter your clothing details yourself.',
+                        'add_manually_sub'.tr(),
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontWeight: FontWeight.w400,
@@ -459,7 +487,7 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Good to Know',
+                'good_to_know'.tr(),
                 style: TextStyle(
                   fontSize: 17.5.sp,
                   fontWeight: FontWeight.w800,
@@ -475,7 +503,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 4.w),
                   Text(
-                    'Windy',
+                    'windy'.tr(),
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w700,
@@ -488,7 +516,7 @@ class HomeScreen extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Breezy conditions are expected today. Consider an extra layer outdoors.',
+            'breezy_note'.tr(),
             style: TextStyle(
               fontSize: 13.sp,
               fontWeight: FontWeight.w400,

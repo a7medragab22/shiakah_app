@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -15,19 +16,22 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    _PlaceholderTabScreen(title: 'Wardrobe'),
-    _PlaceholderTabScreen(title: 'Outfits'),
-    ProfileScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    // Explicitly listen to locale changes to trigger instant rebuild
+    final currentLang = context.locale.languageCode;
+
+    final screens = [
+      const HomeScreen(),
+      _PlaceholderTabScreen(title: 'nav_wardrobe'.tr()),
+      _PlaceholderTabScreen(title: 'nav_outfits'.tr()),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: screens,
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -40,9 +44,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               offset: const Offset(0, -3),
             ),
           ],
-          border: Border(
+          border: const Border(
             top: BorderSide(
-              color: const Color(0xFFECE8E2),
+              color: Color(0xFFECE8E2),
               width: 1.0,
             ),
           ),
@@ -51,6 +55,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             child: BottomNavigationBar(
+              key: ValueKey('bottom_nav_$currentLang'),
               currentIndex: _currentIndex,
               onTap: (index) {
                 setState(() {
@@ -66,26 +71,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               unselectedFontSize: 12.sp,
               selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-              items: const [
+              items: [
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home_filled),
-                  label: 'Home',
+                  icon: const Icon(Icons.home_outlined),
+                  activeIcon: const Icon(Icons.home_filled),
+                  label: 'nav_home'.tr(),
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.checkroom_outlined),
-                  activeIcon: Icon(Icons.checkroom),
-                  label: 'Wardrobe',
+                  icon: const Icon(Icons.checkroom_outlined),
+                  activeIcon: const Icon(Icons.checkroom),
+                  label: 'nav_wardrobe'.tr(),
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.style_outlined),
-                  activeIcon: Icon(Icons.style),
-                  label: 'Outfits',
+                  icon: const Icon(Icons.style_outlined),
+                  activeIcon: const Icon(Icons.style),
+                  label: 'nav_outfits'.tr(),
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline_rounded),
-                  activeIcon: Icon(Icons.person_rounded),
-                  label: 'Profile',
+                  icon: const Icon(Icons.person_outline_rounded),
+                  activeIcon: const Icon(Icons.person_rounded),
+                  label: 'nav_profile'.tr(),
                 ),
               ],
             ),

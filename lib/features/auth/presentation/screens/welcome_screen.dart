@@ -37,7 +37,7 @@ class WelcomeScreen extends StatelessWidget {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: 'Welcome to '.tr(),
+                      text: 'welcome_to'.tr(),
                       style: TextStyle(
                         fontSize: 26.sp,
                         fontWeight: FontWeight.w700,
@@ -45,7 +45,7 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                     ),
                     TextSpan(
-                      text: 'SHIAKAH'.tr(),
+                      text: 'shiakah'.tr(),
                       style: TextStyle(
                         fontSize: 26.sp,
                         fontWeight: FontWeight.w700,
@@ -63,8 +63,7 @@ class WelcomeScreen extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: Text(
-                  'Your AI Fashion Stylist is here to help you discover personalized outfits, smarter styling, and the perfect look for every occasion. '
-                      .tr(),
+                  'welcome_subtitle'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16.sp,
@@ -94,7 +93,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Sign Up'.tr(),
+                    'sign_up'.tr(),
                     style: TextStyle(
                       fontSize: 17.sp,
                       fontWeight: FontWeight.w600,
@@ -127,7 +126,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Sign In'.tr(),
+                    'sign_in'.tr(),
                     style: TextStyle(
                       fontSize: 17.sp,
                       fontWeight: FontWeight.w600,
