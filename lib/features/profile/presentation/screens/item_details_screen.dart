@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,18 +20,10 @@ class ItemDetailsScreen extends StatefulWidget {
 }
 
 class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
-  int _currentIndex = 3; // 4th image (index 3 out of 7, displays "4/7")
+  int _currentIndex = 3;
 
   // Carousel images demo list
-  final List<String> _thumbnails = const [
-    'assets/images/Frame 17975.png',
-    'assets/images/Frame 17976.png',
-    'assets/images/Frame 17977.png',
-    'assets/images/man.png',
-    'assets/images/Frame 17963.png',
-    'assets/images/Frame 17964.png',
-    'assets/images/Frame 17965.png',
-  ];
+  late List<String> _thumbnails;
 
   late PageController _pageController;
   late ScrollController _thumbnailScrollController;
@@ -38,10 +31,23 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialImage != null) {
+    _thumbnails = [
+      'assets/images/Frame 17975.png',
+      'assets/images/Frame 17976.png',
+      'assets/images/Frame 17977.png',
+      'assets/images/man.png',
+      'assets/images/Frame 17963.png',
+      'assets/images/Frame 17964.png',
+      'assets/images/Frame 17965.png',
+    ];
+
+    if (widget.initialImage != null && widget.initialImage!.isNotEmpty) {
       final idx = _thumbnails.indexOf(widget.initialImage!);
       if (idx != -1) {
         _currentIndex = idx;
+      } else {
+        _thumbnails.insert(0, widget.initialImage!);
+        _currentIndex = 0;
       }
     }
     _pageController = PageController(initialPage: _currentIndex);
@@ -238,10 +244,9 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: 24.w),
                         child: Center(
-                          child: Image.asset(
+                          child: _buildItemImage(
                             _thumbnails[index],
-                            fit: BoxFit.contain,
-                            height: double.infinity,
+                            BoxFit.contain,
                           ),
                         ),
                       );
@@ -486,10 +491,9 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                 borderRadius: BorderRadius.circular(
                                   isSelected ? 19.r : 14.r,
                                 ),
-                                child: Image.asset(
+                                child: _buildItemImage(
                                   _thumbnails[index],
-                                  fit: BoxFit.cover,
-                                  alignment: Alignment.topCenter,
+                                  BoxFit.cover,
                                 ),
                               ),
                             ),
@@ -527,6 +531,44 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemImage(String path, BoxFit fit) {
+    if (path.startsWith('assets/')) {
+      return Image.asset(
+        path,
+        fit: fit,
+        errorBuilder: (_, __, ___) => _buildFallbackImage(),
+      );
+    }
+
+    final file = File(path);
+    if (file.existsSync()) {
+      return Image.file(
+        file,
+        fit: fit,
+        errorBuilder: (_, __, ___) => _buildFallbackImage(),
+      );
+    }
+
+    return Image.asset(
+      path,
+      fit: fit,
+      errorBuilder: (_, __, ___) => _buildFallbackImage(),
+    );
+  }
+
+  Widget _buildFallbackImage() {
+    return Container(
+      color: const Color(0xFFEFE8DD),
+      child: Center(
+        child: Icon(
+          Icons.checkroom_rounded,
+          size: 40.sp,
+          color: AppColors.primary,
         ),
       ),
     );

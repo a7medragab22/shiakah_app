@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -101,29 +102,7 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20.r),
                         child: Padding(
                           padding: EdgeInsets.all(16.w),
-                          child: Image.asset(
-                            imagePath,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.checkroom_rounded,
-                                  size: 64.sp,
-                                  color: AppColors.primary,
-                                ),
-                                SizedBox(height: 12.h),
-                                Text(
-                                  'ready_for_analysis'.tr(),
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    color: AppColors.secondary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          child: _buildPreviewImage(imagePath),
                         ),
                       ),
                     ),
@@ -313,6 +292,55 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPreviewImage(String path) {
+    if (path.startsWith('assets/')) {
+      return Image.asset(
+        path,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => _buildFallbackPlaceholder(),
+      );
+    }
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return Image.network(
+        path,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => _buildFallbackPlaceholder(),
+      );
+    }
+
+    return Image.file(
+      File(path),
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => Image.asset(
+        path,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => _buildFallbackPlaceholder(),
+      ),
+    );
+  }
+
+  Widget _buildFallbackPlaceholder() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.checkroom_rounded,
+          size: 64.sp,
+          color: AppColors.primary,
+        ),
+        SizedBox(height: 12.h),
+        Text(
+          'ready_for_analysis'.tr(),
+          style: TextStyle(
+            fontSize: 16.sp,
+            color: AppColors.secondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }

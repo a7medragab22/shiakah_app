@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -64,19 +65,7 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
                           width: double.infinity,
                           height: 340.h,
                           color: const Color(0xFFF2EFEA),
-                          child: Image.asset(
-                            widget.imagePath,
-                            fit: BoxFit.cover,
-                            alignment: Alignment.center,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: const Color(0xFFF5EFE6),
-                              child: Icon(
-                                Icons.checkroom_rounded,
-                                size: 80.sp,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
+                          child: _buildItemImage(widget.imagePath),
                         ),
 
                         // Back Arrow Button
@@ -378,6 +367,48 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
             color: const Color(0xFFB5AFA8),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildItemImage(String path) {
+    if (path.startsWith('assets/')) {
+      return Image.asset(
+        path,
+        fit: BoxFit.cover,
+        alignment: Alignment.center,
+        errorBuilder: (_, __, ___) => _buildFallbackImage(),
+      );
+    }
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return Image.network(
+        path,
+        fit: BoxFit.cover,
+        alignment: Alignment.center,
+        errorBuilder: (_, __, ___) => _buildFallbackImage(),
+      );
+    }
+
+    return Image.file(
+      File(path),
+      fit: BoxFit.cover,
+      alignment: Alignment.center,
+      errorBuilder: (_, __, ___) => Image.asset(
+        path,
+        fit: BoxFit.cover,
+        alignment: Alignment.center,
+        errorBuilder: (_, __, ___) => _buildFallbackImage(),
+      ),
+    );
+  }
+
+  Widget _buildFallbackImage() {
+    return Container(
+      color: const Color(0xFFF5EFE6),
+      child: Icon(
+        Icons.checkroom_rounded,
+        size: 80.sp,
+        color: AppColors.primary,
       ),
     );
   }

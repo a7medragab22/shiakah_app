@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -56,11 +57,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                   width: double.infinity,
                   height: 380.h,
                   color: const Color(0xFFEAD9C6),
-                  child: Image.asset(
-                    displayImage,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.topCenter,
-                  ),
+                  child: _buildHeaderImage(displayImage),
                 ),
                 SafeArea(
                   child: Padding(
@@ -782,6 +779,34 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHeaderImage(String path) {
+    if (path.startsWith('assets/')) {
+      return Image.asset(
+        path,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        errorBuilder: (_, __, ___) => Container(color: const Color(0xFFEAD9C6)),
+      );
+    }
+
+    final file = File(path);
+    if (file.existsSync()) {
+      return Image.file(
+        file,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        errorBuilder: (_, __, ___) => Container(color: const Color(0xFFEAD9C6)),
+      );
+    }
+
+    return Image.asset(
+      path,
+      fit: BoxFit.cover,
+      alignment: Alignment.topCenter,
+      errorBuilder: (_, __, ___) => Container(color: const Color(0xFFEAD9C6)),
     );
   }
 }
