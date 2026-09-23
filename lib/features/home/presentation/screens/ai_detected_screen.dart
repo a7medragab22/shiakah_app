@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../data/models/fashion_analysis_model.dart';
 import '../../../../core/localization/app_localization_helper.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../profile/presentation/screens/item_details_screen.dart';
@@ -14,6 +15,7 @@ class AiDetectedScreen extends StatefulWidget {
   final String colorName;
   final int colorHex;
   final String fitName;
+  final FashionAnalysisResponse? analysisResponse;
 
   const AiDetectedScreen({
     super.key,
@@ -23,6 +25,7 @@ class AiDetectedScreen extends StatefulWidget {
     this.colorName = 'Off-White',
     this.colorHex = 0xFFFFFAFA,
     this.fitName = 'Regular',
+    this.analysisResponse,
   });
 
   @override
@@ -184,6 +187,54 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
                             label: '${'pattern'.tr()}:',
                             value: AppLocalizationHelper.translatePattern(context, widget.patternName),
                           ),
+                          if (widget.analysisResponse != null &&
+                              widget.analysisResponse!.stylingTips.isNotEmpty) ...[
+                            SizedBox(height: 16.h),
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.all(14.w),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF9F7F2),
+                                borderRadius: BorderRadius.circular(16.r),
+                                border: Border.all(color: const Color(0xFFEADBCE)),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.auto_awesome_rounded,
+                                    color: AppColors.primary,
+                                    size: 20.sp,
+                                  ),
+                                  SizedBox(width: 10.w),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'AI Styling Tip',
+                                          style: TextStyle(
+                                            fontSize: 13.5.sp,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4.h),
+                                        Text(
+                                          widget.analysisResponse!.stylingTips,
+                                          style: TextStyle(
+                                            fontSize: 12.5.sp,
+                                            color: const Color(0xFF55504A),
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           SizedBox(height: 24.h),
 
                           // ── Occasion Selection Section ───────────────────────

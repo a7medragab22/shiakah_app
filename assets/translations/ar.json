@@ -331,5 +331,11 @@
   "col_dark_teal": "تيل داكن",
   "col_rose_gold": "ذهب وردي",
   "col_bronze": "برونزي",
-  "col_gunmetal": "معدني داكن"
+  "col_gunmetal": "معدني داكن",
+  "analyzing_image_ai": "جاري تحليل الصورة بالذكاء الاصطناعي...",
+  "verifying_clothing": "جاري فحص تفاصيل الملابس والستايل...",
+  "no_clothing_detected": "لم يتم العثور على ملابس",
+  "take_another_photo": "التقاط أو اختيار صورة أخرى",
+  "connection_error": "خطأ في الاتصال",
+  "please_check_backend": "يرجى التأكد من تشغيل خادم Flask المحلي على المنفذ 5000."
 }

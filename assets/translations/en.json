@@ -331,5 +331,11 @@
   "col_dark_teal": "Dark Teal",
   "col_rose_gold": "Rose Gold",
   "col_bronze": "Bronze",
-  "col_gunmetal": "Gunmetal"
+  "col_gunmetal": "Gunmetal",
+  "analyzing_image_ai": "Analyzing image with AI...",
+  "verifying_clothing": "Verifying clothing items and style...",
+  "no_clothing_detected": "No Clothing Detected",
+  "take_another_photo": "Take / Choose Another Photo",
+  "connection_error": "Connection Error",
+  "please_check_backend": "Please make sure the local Flask server is running on port 5000."
 }
