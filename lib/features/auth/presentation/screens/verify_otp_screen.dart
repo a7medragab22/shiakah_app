@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -55,7 +56,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           AuthHeader(
             type: AuthHeaderType.image,
             imagePath: 'assets/images/cloths.jpg',
-            title: 'Create Account',
+            title: 'create_account_title'.tr(),
             fallbackRoute: Routes.register,
             height: 230.h,
           ),
@@ -66,10 +67,8 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
               children: [
                 // Logo + title + subtitle
                 AuthLogoSection(
-                  title: 'Verify Your Number',
-                  subtitle:
-                      "We've sent a 6-digit verification code to your phone. "
-                      'Enter it below to continue.',
+                  title: 'verify_your_number'.tr(),
+                  subtitle: 'verify_subtitle'.tr(),
                 ),
 
                 SizedBox(height: 24.h),
@@ -86,11 +85,9 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
 
                 // Resend link
                 AuthFooterLink(
-                  prefixText: "Didn't receive the code? ",
-                  linkText: 'Resend Code',
-                  onTap: () {
-                    // TODO: trigger resend API call
-                  },
+                  prefixText: 'didnt_receive_code'.tr(),
+                  linkText: 'resend_code'.tr(),
+                  onTap: () {},
                 ),
 
                 const Spacer(),
@@ -98,7 +95,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
 
                 // Continue button
                 AuthPrimaryButton(
-                  label: 'Continue',
+                  label: 'continue_btn'.tr(),
                   onPressed: () => context.go(Routes.styleSetup),
                 ),
 
@@ -111,10 +108,6 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Private: OTP row of digit boxes
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _OtpRow extends StatelessWidget {
   const _OtpRow({

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
@@ -5,15 +6,15 @@ import 'package:geocoding/geocoding.dart';
 import 'package:dio/dio.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/local_storage/local_storage.dart';
 import '../../../../core/router/router.dart';
 import '../../../../core/theme/theme.dart';
+import '../../models/user_model.dart';
 import '../widgets/auth_buttons.dart';
 import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/step_progress_indicator.dart';
 
-/// Step 5 of 5 in the style-setup flow.
-/// Takes the user's name and verifies their location.
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
 
@@ -32,7 +33,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Automatically detect and verify location on screen load!
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchLocation();
     });
@@ -54,9 +54,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     }
   }
 
-  /// Fast IP-based Geolocation (< 250ms), highly accurate for country and city
   Future<String?> _fetchIpLocation() async {
-    // 1. Try ipwho.is (fast HTTPS, returns Egyptian governorate & city)
     try {
       final res = await Dio().get(
         'https://ipwho.is/',
@@ -78,7 +76,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       }
     } catch (_) {}
 
-    // 2. Try freeipapi.com (backup)
     try {
       final res = await Dio().get(
         'https://freeipapi.com/api/json',
@@ -101,10 +98,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     return null;
   }
 
-  /// Detects location instantly without ever throwing TimeoutException:
-  /// 1. First tries cached GPS position (instant 0ms) if permission is already granted.
-  /// 2. If no cached GPS fix, instantly resolves city via HTTPS IP Geolocation (~200ms).
-  /// 3. Safely defaults to 'Egypt, Cairo' so the user is never blocked.
   Future<void> _fetchLocation() async {
     if (_isLoadingLocation) return;
 
@@ -112,7 +105,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       _isLoadingLocation = true;
     });
 
-    // 1. Check if GPS is already enabled & has cached coordinates
     try {
       bool serviceEnabled =
           await Geolocator.isLocationServiceEnabled().catchError((_) => false);
@@ -156,18 +148,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       }
     } catch (_) {}
 
-    // 2. Fast IP Geolocation (instant, works on emulator & real devices)
     final ipLoc = await _fetchIpLocation();
     if (ipLoc != null && mounted) {
       _applyLocation(ipLoc);
       return;
     }
 
-    // 3. Fallback default
     _applyLocation('Egypt, Cairo');
   }
 
-  /// Allows the user to manually pick or change their Egyptian city
   void _showCityPickerSheet() {
     final cities = [
       'Cairo',
@@ -215,7 +204,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Select Your City',
+                      'select_your_city'.tr(),
                       style: TextStyle(
                         fontSize: 17.sp,
                         fontWeight: FontWeight.w700,
@@ -277,7 +266,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           AuthHeader(
             type: AuthHeaderType.image,
             imagePath: 'assets/images/cloths.jpg',
-            title: 'Create Account',
+            title: 'create_account_title'.tr(),
             fallbackRoute: Routes.defineStyle,
             height: 130.h,
             stepIndicator: const StepProgressIndicator(currentStep: 5),
@@ -299,7 +288,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       ),
                       SizedBox(height: 14.h),
                       Text(
-                        'Complete Your Profile',
+                        'complete_your_profile'.tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 22.sp,
@@ -311,7 +300,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: Text(
-                          'Personalize your experience before you get started.',
+                          'complete_profile_subtitle'.tr(),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13.5.sp,
@@ -329,7 +318,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
                 // ── Your Name Field ─────────────────────────────────────
                 Text(
-                  'Your Name',
+                  'your_name'.tr(),
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w700,
@@ -358,11 +347,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                       ),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         border: InputBorder.none,
                         isDense: true,
-                        hintText: 'Enter your name',
-                        hintStyle: TextStyle(
+                        hintText: 'enter_your_name'.tr(),
+                        hintStyle: const TextStyle(
                           color: Color(0xFFA09B95),
                           fontWeight: FontWeight.w400,
                         ),
@@ -430,10 +419,27 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
                 // ── Continue Button (Enabled ONLY when location is verified) ──
                 AuthPrimaryButton(
-                  label: 'Continue',
+                  label: 'continue_btn'.tr(),
                   isEnabled: _isLocationVerified,
                   onPressed: _isLocationVerified
-                      ? () => context.go(Routes.home)
+                      ? () async {
+                          final name = _nameController.text.trim();
+                          if (name.isNotEmpty) {
+                            final cached = HiveServiceImpl.instance.getCachedUserModel();
+                            if (cached != null) {
+                              await HiveServiceImpl.instance.updateCachedUserModel(
+                                cached.copyWith(name: name),
+                              );
+                            } else {
+                              await HiveServiceImpl.instance.cacheUserModel(
+                                UserModel(id: 1, name: name, email: '', phone: ''),
+                              );
+                            }
+                          }
+                          if (context.mounted) {
+                            context.go(Routes.home);
+                          }
+                        }
                       : null,
                 ),
 
@@ -446,12 +452,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  /// State: Location is verified (as shown in the screenshot)
   Widget _buildVerifiedLocation() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Custom Green Location Pin with Checkmark
         SizedBox(
           width: 56.w,
           height: 56.w,
@@ -462,9 +466,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
         SizedBox(height: 12.h),
 
-        // Title
         Text(
-          'Location Verified',
+          'location_verified'.tr(),
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.w800,
@@ -474,11 +477,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
         SizedBox(height: 8.h),
 
-        // Subtitle
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.w),
           child: Text(
-            'Weather-based outfit recommendations are now personalized for your location.',
+            'location_verified_subtitle'.tr(),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13.sp,
@@ -491,7 +493,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
         SizedBox(height: 14.h),
 
-        // Location tag (Gold pin + Country, City + Change button)
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -518,7 +519,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
-                'Change',
+                'change'.tr(),
                 style: TextStyle(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
@@ -532,7 +533,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  /// State: Detecting Location (loading animation)
   Widget _buildLoadingLocation() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -547,7 +547,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
         SizedBox(height: 14.h),
         Text(
-          'Detecting Location...',
+          'detecting_location'.tr(),
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w700,
@@ -556,7 +556,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
         SizedBox(height: 6.h),
         Text(
-          'Please wait while we determine your city',
+          'detecting_location_subtitle'.tr(),
           style: TextStyle(
             fontSize: 12.5.sp,
             color: const Color(0xFF8E8883),
@@ -566,12 +566,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  /// State: Location not yet verified (Initial state)
   Widget _buildUnverifiedLocation() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Location Pin Icon in circular badge
         Container(
           width: 56.w,
           height: 56.w,
@@ -587,7 +585,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
         SizedBox(height: 12.h),
         Text(
-          'Verify Your Location',
+          'verify_your_location'.tr(),
           style: TextStyle(
             fontSize: 17.5.sp,
             fontWeight: FontWeight.w700,
@@ -598,7 +596,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 10.w),
           child: Text(
-            'Tap here to allow weather-based outfit recommendations.',
+            'verify_location_subtitle'.tr(),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13.sp,
@@ -608,7 +606,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           ),
         ),
         SizedBox(height: 14.h),
-        // Action pill indicator
         Container(
           padding: EdgeInsets.symmetric(
             horizontal: 16.w,
@@ -632,7 +629,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               ),
               SizedBox(width: 6.w),
               Text(
-                'Tap to Detect Location',
+                'tap_to_detect_location'.tr(),
                 style: TextStyle(
                   fontSize: 12.5.sp,
                   fontWeight: FontWeight.w600,
@@ -647,17 +644,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Custom Painter for the Green Location Pin with Checkmark Icon
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _LocationVerifiedIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final double w = size.width;
     final double h = size.height;
 
-    // Green stroke paint
     final Paint pinPaint = Paint()
       ..color = const Color(0xFF388E3C)
       ..style = PaintingStyle.stroke
@@ -672,13 +664,11 @@ class _LocationVerifiedIconPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    // Draw Location Pin Path
     final Path pinPath = Path();
     final double centerX = w * 0.46;
     final double headRadius = w * 0.26;
     final double headCenterY = h * 0.34;
 
-    // Top circular head and tapered tail
     pinPath.addArc(
       Rect.fromCircle(
         center: Offset(centerX, headCenterY),
@@ -688,7 +678,6 @@ class _LocationVerifiedIconPainter extends CustomPainter {
       1.85 * 3.14159,
     );
 
-    // Left curve down to bottom tip
     pinPath.moveTo(
         centerX - headRadius * 0.88, headCenterY + headRadius * 0.45);
     pinPath.cubicTo(
@@ -700,7 +689,6 @@ class _LocationVerifiedIconPainter extends CustomPainter {
       h * 0.78,
     );
 
-    // Right curve up towards head
     pinPath.cubicTo(
       centerX + headRadius * 0.3,
       headCenterY + headRadius * 1.8,
@@ -712,7 +700,6 @@ class _LocationVerifiedIconPainter extends CustomPainter {
 
     canvas.drawPath(pinPath, pinPaint);
 
-    // Draw inner circle dot inside the pin
     final Paint dotPaint = Paint()
       ..color = const Color(0xFF388E3C)
       ..style = PaintingStyle.stroke
@@ -724,7 +711,6 @@ class _LocationVerifiedIconPainter extends CustomPainter {
       dotPaint,
     );
 
-    // Draw checkmark badge on the bottom right
     final Path checkPath = Path();
     final double checkStartX = w * 0.52;
     final double checkStartY = h * 0.74;

@@ -1,12 +1,13 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shiakah/features/auth/presentation/widgets/custom_auth_input_field.dart';
 
 import '../../../../core/router/router.dart';
 import '../widgets/auth_buttons.dart';
 import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
-import '../widgets/phone_input_field.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -16,11 +17,13 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _gmailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _gmailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -34,7 +37,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           AuthHeader(
             type: AuthHeaderType.image,
             imagePath: 'assets/images/cloths.jpg',
-            title: 'Create Account',
+            title: 'create_account_title'.tr(),
             fallbackRoute: Routes.welcome,
             height: 230.h,
           ),
@@ -45,29 +48,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
               children: [
                 // Logo + title + subtitle
                 AuthLogoSection(
-                  title: 'Create Your Account',
-                  subtitle:
-                      'Enter your phone number to receive a verification code '
-                      'and start your AI fashion journey.',
+                  title: 'create_your_account'.tr(),
+                  subtitle: 'sign_up_subtitle'.tr(),
                 ),
 
                 SizedBox(height: 24.h),
 
                 // Phone input
-                PhoneInputField(
-                  controller: _phoneController,
-                  label: 'Phone Number',
-                  hintText: '1234 567 890',
-                  helperText:
-                      "We'll verify your number before creating your account.",
+                CustomAuthInputField(
+                  controller: _gmailController,
+                  label: 'gmail'.tr(),
+                  hintText: 'gmail_hint'.tr(),
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: Icons.mail_outline_rounded,
                 ),
-
+                SizedBox(height: 14.h),
+                CustomAuthInputField(
+                  controller: _passwordController,
+                  label: 'password'.tr(),
+                  hintText: 'password_hint'.tr(),
+                  isPassword: true,
+                  prefixIcon: Icons.lock_outline_rounded,
+                ),
                 const Spacer(),
-                SizedBox(height: 16.h),
-
                 // Continue button → Verify OTP
                 AuthPrimaryButton(
-                  label: 'Continue',
+                  label: 'continue_btn'.tr(),
                   onPressed: () => context.go(Routes.verifyOtp),
                 ),
 
@@ -75,8 +81,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 // Footer link
                 AuthFooterLink(
-                  prefixText: 'Already have an account? ',
-                  linkText: 'Sign In',
+                  prefixText: 'already_have_an_account'.tr(),
+                  linkText: 'sign_in'.tr(),
                   onTap: () => context.go(Routes.login),
                 ),
 

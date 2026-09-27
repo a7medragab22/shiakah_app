@@ -6,29 +6,33 @@ Failure _handleDioError(DioException error) {
       scaffoldMessengerKey.currentContext!.showErrorMessage('تم الغاء الطلب ');
       return ServerFailure(message: 'تم إلغاء الطلب ');
     case DioExceptionType.connectionTimeout:
-      scaffoldMessengerKey.currentContext!.showErrorMessage('انتهت مهلة الاتصال ');
+      scaffoldMessengerKey.currentContext!
+          .showErrorMessage('انتهت مهلة الاتصال ');
       return ServerFailure(message: 'انتهت مهلة الاتصال ');
     case DioExceptionType.receiveTimeout:
-      scaffoldMessengerKey.currentContext!.showErrorMessage('انتهت مهلة الاتصال ');
+      scaffoldMessengerKey.currentContext!
+          .showErrorMessage('انتهت مهلة الاتصال ');
       return ServerFailure(message: 'انتهت مهلة الاستقبال في الاتصال ');
     case DioExceptionType.sendTimeout:
-      scaffoldMessengerKey.currentContext!.showErrorMessage('انتهت مهلة الاتصال ');
+      scaffoldMessengerKey.currentContext!
+          .showErrorMessage('انتهت مهلة الاتصال ');
       return ServerFailure(message: 'انتهت مهلة الإرسال في الاتصال ');
-    case DioExceptionType.badResponse://400-500
+    case DioExceptionType.badResponse: //400-500
       if (error.response?.data != null) {
         try {
           final data = error.response!.data;
           final Map<String, dynamic> decoded =
-          data is String ? json.decode(data) : data;
+              data is String ? json.decode(data) : data;
           if (error.response?.statusCode == 503) {
             return ServerFailure(message: 'network failure ${error.message}');
           }
           if (error.response?.statusCode == 401) {
-            scaffoldMessengerKey.currentContext!.showErrorMessage('غير مصرح لك');
-            ///TODO: navigate to login screen
+            scaffoldMessengerKey.currentContext!
+                .showErrorMessage('غير مصرح لك');
+
+            /// TODO: navigate to login screen
             // scaffoldMessengerKey.currentContext!.go(const WhoAreYou(forLogin: true));
-            return UnauthorizedFailure(
-                message: error.message ?? 'غير مصرح لك');
+            return UnauthorizedFailure(message: error.message ?? 'غير مصرح لك');
           }
 
           if (error.response?.statusCode == 413) {
@@ -85,13 +89,13 @@ Failure _handleDioError(DioException error) {
           // scaffoldMessengerKey.currentContext!.showErrorMessage(e.toString());
           return ServerFailure(
               message:
-              'Received invalid status code: ${error.response?.statusCode}');
+                  'Received invalid status code: ${error.response?.statusCode}');
         }
       }
       // scaffoldMessengerKey.currentContext!.showErrorMessage(error.message!);
       return ServerFailure(
           message:
-          'Received invalid status code: ${error.response?.statusCode}');
+              'Received invalid status code: ${error.response?.statusCode}');
     case DioExceptionType.badCertificate:
       return ServerFailure(message: 'تعذر الاتصال ');
     case DioExceptionType.connectionError:

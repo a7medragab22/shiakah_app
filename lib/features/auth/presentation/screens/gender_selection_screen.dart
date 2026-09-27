@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -9,8 +10,6 @@ import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/step_progress_indicator.dart';
 
-/// Step 1 of 5 in the style-setup flow.
-/// Lets the user pick their fashion category: Men or Women.
 class GenderSelectionScreen extends StatefulWidget {
   const GenderSelectionScreen({super.key});
 
@@ -19,7 +18,6 @@ class GenderSelectionScreen extends StatefulWidget {
 }
 
 class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
-  /// null = nothing selected yet, 'men' or 'women'
   String? _selected;
 
   @override
@@ -32,7 +30,7 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
           AuthHeader(
             type: AuthHeaderType.image,
             imagePath: 'assets/images/cloths.jpg',
-            title: 'Create Account',
+            title: 'create_account_title'.tr(),
             fallbackRoute: Routes.styleSetup,
             height: 130.h,
             stepIndicator: const StepProgressIndicator(currentStep: 1),
@@ -53,7 +51,7 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
 
                 // Title
                 Text(
-                  'Who are we styling today?',
+                  'who_styling_today'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 22.sp,
@@ -68,8 +66,7 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 12.w),
                   child: Text(
-                    'Choose your fashion category to personalize '
-                    'your AI stylist and recommendations.',
+                    'gender_selection_subtitle'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13.5.sp,
@@ -87,7 +84,7 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
                   children: [
                     Expanded(
                       child: _GenderCard(
-                        label: 'Men',
+                        label: 'men'.tr(),
                         imagePath: 'assets/images/man.png',
                         isSelected: _selected == 'men',
                         onTap: () => setState(() => _selected = 'men'),
@@ -96,7 +93,7 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
                     SizedBox(width: 16.w),
                     Expanded(
                       child: _GenderCard(
-                        label: 'Women',
+                        label: 'women'.tr(),
                         imagePath: 'assets/images/women.jpg',
                         isSelected: _selected == 'women',
                         onTap: () => setState(() => _selected = 'women'),
@@ -110,7 +107,7 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
 
                 // Continue — enabled only when a gender is selected
                 AuthPrimaryButton(
-                  label: 'Continue',
+                  label: 'continue_btn'.tr(),
                   isEnabled: _selected != null,
                   onPressed: _selected == null
                       ? null
@@ -126,10 +123,6 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Private: individual gender selection card
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _GenderCard extends StatelessWidget {
   const _GenderCard({
