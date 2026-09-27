@@ -1,10 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/bloc/paginated_bloc/exports.dart';
+import '../../../../core/enum/status.dart';
 import '../../../../core/router/router.dart';
+import '../../../../core/service_locator/service_locator.dart';
 import '../../../../core/theme/theme.dart';
+import '../../auth.dart';
 import '../widgets/auth_buttons.dart';
 import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
@@ -62,16 +67,25 @@ class _DefineStyleScreenState extends State<DefineStyleScreen> {
   ];
 
   static const List<_ColorItem> _extraColors = [
-    _ColorItem(id: 'charcoal', labelKey: 'gray', color: Color(0xFF36454F)),
-    _ColorItem(id: 'sage', labelKey: 'olive', color: Color(0xFF9CAF88)),
-    _ColorItem(id: 'terracotta', labelKey: 'mustard', color: Color(0xFFE2725B)),
-    _ColorItem(id: 'rust', labelKey: 'brown', color: Color(0xFFB7410E)),
-    _ColorItem(id: 'lavender', labelKey: 'navy', color: Color(0xFF967BB6)),
-    _ColorItem(id: 'peach', labelKey: 'beige', color: Color(0xFFF4C2C2)),
+    _ColorItem(
+        id: 'dark_gray', labelKey: 'dark_gray', color: Color(0xFF36454F)),
+    _ColorItem(
+        id: 'light_olive', labelKey: 'light_olive', color: Color(0xFF9CAF88)),
+    _ColorItem(id: 'coral', labelKey: 'coral', color: Color(0xFFE2725B)),
+    _ColorItem(
+        id: 'burnt_brown', labelKey: 'burnt_brown', color: Color(0xFFB7410E)),
+    _ColorItem(id: 'purple', labelKey: 'purple', color: Color(0xFF967BB6)),
+    _ColorItem(id: 'pink', labelKey: 'pink', color: Color(0xFFF4C2C2)),
   ];
 
   final Set<String> _selectedColors = {'white', 'beige', 'brown'};
   bool _showMoreColors = false;
+
+  @override
+  void initState() {
+    super.initState();
+    DI.executeSync();
+  }
 
   void _toggleStyle(String style) {
     setState(() {
@@ -95,236 +109,292 @@ class _DefineStyleScreenState extends State<DefineStyleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFEFE5D8),
-      body: Column(
-        children: [
-          // ── Header with Step 4 Progress ──────────────────────────────
-          AuthHeader(
-            type: AuthHeaderType.image,
-            imagePath: 'assets/images/cloths.jpg',
-            title: 'create_account_title'.tr(),
-            fallbackRoute: Routes.bodyType,
-            height: 130.h,
-            stepIndicator: const StepProgressIndicator(currentStep: 4),
-          ),
+    return BlocProvider<PreferencesBloc>(
+      create: (_) => getIt<PreferencesBloc>(),
+      child: BlocConsumer<PreferencesBloc, BaseState<PreferencesResponseModel>>(
+        listener: (context, state) {
+          if (state.status == Status.success) {
+            context.go(Routes.completeProfile);
+          } else if (state.status == Status.failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.errorMessage ?? 'Something went wrong',
+                ),
+                backgroundColor: Colors.red.shade700,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          final bool isLoading = state.status == Status.loading;
+          final bool isEnabled =
+              _selectedStyles.isNotEmpty && _selectedColors.isNotEmpty && !isLoading;
 
-          // ── White Form Card ──────────────────────────────────────────
-          AuthFormCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          return Scaffold(
+            backgroundColor: const Color(0xFFEFE5D8),
+            body: Column(
               children: [
-                // Logo + Title + Subtitle
-                Center(
+                // ── Header with Step 4 Progress ──────────────────────────────
+                AuthHeader(
+                  type: AuthHeaderType.image,
+                  imagePath: 'assets/images/cloths.jpg',
+                  title: 'create_account_title'.tr(),
+                  fallbackRoute: Routes.bodyType,
+                  height: 140.h,
+                  stepIndicator: const StepProgressIndicator(currentStep: 4),
+                ),
+
+                // ── White Form Card ──────────────────────────────────────────
+                AuthFormCard(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.asset(
-                        'assets/images/logo.png',
-                        height: 64.h,
-                        fit: BoxFit.contain,
+                      // Logo + Title + Subtitle
+                      Center(
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/logo.png',
+                              height: 58.h,
+                              fit: BoxFit.contain,
+                            ),
+                            SizedBox(height: 12.h),
+                            Text(
+                              'define_your_style'.tr(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              child: Text(
+                                'define_style_subtitle'.tr(),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13.5.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xFF8E8883),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      SizedBox(height: 14.h),
+
+                      SizedBox(height: 20.h),
+
+                      // ── Styles Section ──────────────────────────────────────
                       Text(
-                        'define_your_style'.tr(),
-                        textAlign: TextAlign.center,
+                        'styles'.tr(),
                         style: TextStyle(
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      SizedBox(height: 8.h),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w),
-                        child: Text(
-                          'define_style_subtitle'.tr(),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 13.5.sp,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF8E8883),
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                SizedBox(height: 22.h),
-
-                // ── Styles Section ──────────────────────────────────────
-                Text(
-                  'styles'.tr(),
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                SizedBox(height: 12.h),
-
-                // Style chips wrap
-                Wrap(
-                  spacing: 8.w,
-                  runSpacing: 10.h,
-                  children: _styleItems.map((item) {
-                    final bool isSelected = _selectedStyles.contains(item['id']);
-                    return GestureDetector(
-                      onTap: () => _toggleStyle(item['id']!),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 10.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFFB5956A)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(
-                            color: isSelected
-                                ? const Color(0xFFB5956A)
-                                : const Color(0xFFE2D6C6),
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Text(
-                          item['key']!.tr(),
-                          style: TextStyle(
-                            fontSize: 13.5.sp,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.w500,
-                            color: isSelected
-                                ? Colors.white
-                                : const Color(0xFF9E9892),
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-
-                SizedBox(height: 20.h),
-
-                // ── Preferred Colors Section ────────────────────────────
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 14.w,
-                    vertical: 14.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFAF7F2),
-                    borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                      color: const Color(0xFFEFE8DE),
-                      width: 1.0,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      // Header: Preferred Colors + Popular Colors label
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'preferred_colors'.tr(),
-                            style: TextStyle(
-                              fontSize: 14.5.sp,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            'popular_colors'.tr(),
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFFB0AAA3),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: 14.h),
-
-                      // Popular colors row 1 (6 items)
-                      _buildColorRow(_popularColors.sublist(0, 6)),
 
                       SizedBox(height: 12.h),
 
-                      // Popular colors row 2 (6 items)
-                      _buildColorRow(_popularColors.sublist(6, 12)),
+                      // Style chips wrap
+                      Wrap(
+                        spacing: 8.w,
+                        runSpacing: 10.h,
+                        children: _styleItems.map((item) {
+                          final bool isSelected =
+                              _selectedStyles.contains(item['id']);
+                          return GestureDetector(
+                            onTap: isLoading
+                                ? () {}
+                                : () => _toggleStyle(item['id']!),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 10.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFFB5956A)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? const Color(0xFFB5956A)
+                                      : const Color(0xFFE2D6C6),
+                                  width: 1.2,
+                                ),
+                              ),
+                              child: Text(
+                                item['key']!.tr(),
+                                style: TextStyle(
+                                  fontSize: 13.5.sp,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : const Color(0xFF9E9892),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
 
-                      // Extra colors if "More" is toggled
-                      AnimatedCrossFade(
-                        duration: const Duration(milliseconds: 240),
-                        crossFadeState: _showMoreColors
-                            ? CrossFadeState.showSecond
-                            : CrossFadeState.showFirst,
-                        firstChild: const SizedBox.shrink(),
-                        secondChild: Padding(
-                          padding: EdgeInsets.only(top: 12.h),
-                          child: _buildColorRow(_extraColors),
+                      SizedBox(height: 20.h),
+
+                      // ── Preferred Colors Section ────────────────────────────
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 14.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFAF7F2),
+                          borderRadius: BorderRadius.circular(16.r),
+                          border: Border.all(
+                            color: const Color(0xFFEFE8DE),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            // Header: Preferred Colors + Popular Colors label
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'preferred_colors'.tr(),
+                                    style: TextStyle(
+                                      fontSize: 14.5.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 8.w),
+                                Text(
+                                  'popular_colors'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xFFB0AAA3),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: 14.h),
+
+                            // Popular colors row 1 (6 items)
+                            _buildColorRow(
+                              _popularColors.sublist(0, 6),
+                              isLoading,
+                            ),
+
+                            SizedBox(height: 12.h),
+
+                            // Popular colors row 2 (6 items)
+                            _buildColorRow(
+                              _popularColors.sublist(6, 12),
+                              isLoading,
+                            ),
+
+                            // Extra colors if "More" is toggled
+                            if (_showMoreColors)
+                              Padding(
+                                padding: EdgeInsets.only(top: 12.h),
+                                child: _buildColorRow(
+                                  _extraColors,
+                                  isLoading,
+                                ),
+                              ),
+
+                            SizedBox(height: 14.h),
+
+                            // "More" / "Less" button
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _showMoreColors = !_showMoreColors;
+                                });
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 28.w,
+                                  vertical: 6.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20.r),
+                                  border: Border.all(
+                                    color: const Color(0xFFE2D6C6),
+                                    width: 1.2,
+                                  ),
+                                ),
+                                child: Text(
+                                  _showMoreColors ? 'less'.tr() : 'more'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 12.5.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF6E6760),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
 
-                      SizedBox(height: 14.h),
+                      SizedBox(height: 20.h),
 
-                      // "More" / "Less" button
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _showMoreColors = !_showMoreColors;
-                          });
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 28.w,
-                            vertical: 6.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20.r),
-                            border: Border.all(
-                              color: const Color(0xFFE2D6C6),
-                              width: 1.2,
-                            ),
-                          ),
-                          child: Text(
-                            _showMoreColors ? 'less'.tr() : 'more'.tr(),
-                            style: TextStyle(
-                              fontSize: 12.5.sp,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF6E6760),
-                            ),
-                          ),
-                        ),
+                      AuthPrimaryButton(
+                        label: 'continue_btn'.tr(),
+                        isEnabled: isEnabled,
+                        isLoading: isLoading,
+                        onPressed: isEnabled
+                            ? () {
+                                final List<int> styles = _selectedStyles
+                                    .map((s) => StyleType.fromString(s).value)
+                                    .toList();
+                                final List<int> preferredColors =
+                                    _selectedColors
+                                        .map((c) =>
+                                            PreferredColorType.fromString(c)
+                                                .value)
+                                        .toList();
+
+                                context.read<PreferencesBloc>().add(
+                                      PreferencesSubmitted(
+                                        styles: styles,
+                                        preferredColors: preferredColors,
+                                      ),
+                                    );
+                              }
+                            : null,
                       ),
+
+                      SizedBox(height: 12.h),
                     ],
                   ),
                 ),
-
-                SizedBox(height: 24.h),
-
-                AuthPrimaryButton(
-                  label: 'continue_btn'.tr(),
-                  onPressed: () => context.go(Routes.completeProfile),
-                ),
-
-                SizedBox(height: 12.h),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildColorRow(List<_ColorItem> items) {
+  Widget _buildColorRow(List<_ColorItem> items, bool isLoading) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,7 +404,7 @@ class _DefineStyleScreenState extends State<DefineStyleScreen> {
           child: _ColorSwatchWidget(
             item: item,
             isSelected: isSelected,
-            onTap: () => _toggleColor(item.id),
+            onTap: isLoading ? () {} : () => _toggleColor(item.id),
           ),
         );
       }).toList(),

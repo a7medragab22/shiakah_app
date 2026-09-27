@@ -78,6 +78,41 @@ class GenericDataSource {
     );
   }
 
+  Future<Either<Failure, T>> getData<T>({
+    required String endpoint,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+    T Function(Map<String, dynamic>)? fromJson,
+  }) async {
+    final result = await _apiConsumer.get(
+      endpoint,
+      queryParameters: queryParameters,
+      headers: headers,
+    );
+    return result.fold(
+      (left) => Left(left),
+      (right) {
+        try {
+          if (right.containsKey('success') && right['success'] == false) {
+            final msg = right['message']?.toString() ?? 'Operation failed';
+            return Left(ServerFailure(message: msg));
+          }
+          if (T == Null) {
+            return Right(null as T);
+          } else if (fromJson != null) {
+            return Right(fromJson(right));
+          } else {
+            return Right(right as T);
+          }
+        } catch (e, stackTrace) {
+          loggerError(stackTrace);
+          loggerWarn(e.toString());
+          return Left(ParsingFailure(message: e.toString()));
+        }
+      },
+    );
+  }
+
   Future<Either<Failure, T>> postData<T>({
     required String endpoint,
     Map<String, dynamic>? data,

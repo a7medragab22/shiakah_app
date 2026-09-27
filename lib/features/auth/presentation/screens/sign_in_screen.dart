@@ -95,11 +95,15 @@ class _SignInScreenContentState extends State<_SignInScreenContent> {
       body: SafeArea(
         bottom: false,
         child: BlocConsumer<LoginBloc, BaseState<LoginResponseModel>>(
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state.status == Status.success) {
               final message = state.data?.message ?? 'تم تسجيل الدخول بنجاح';
               context.showSuccessMessage(message);
-              context.go(Routes.home);
+              final targetRoute = await getIt<OnboardingStatusDataSource>()
+                  .resolveTargetRouteAndSync();
+              if (context.mounted) {
+                context.go(targetRoute);
+              }
             } else if (state.status == Status.failure) {
               final error = state.errorMessage ?? 'فشل تسجيل الدخول';
               context.showErrorMessage(error);

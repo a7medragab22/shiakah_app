@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:geolocator/geolocator.dart';
+import '../../../../core/local_storage/local_storage.dart';
 import '../models/weather_model.dart';
 
 class WeatherService {
@@ -38,8 +39,9 @@ class WeatherService {
   }
 
   Future<WeatherModel> fetchWeather({String? city}) async {
-    String query = city ?? '';
+    String query = city?.trim() ?? '';
 
+    // Automatically detect location if not explicitly provided
     if (query.isEmpty) {
       try {
         bool serviceEnabled =
@@ -47,11 +49,19 @@ class WeatherService {
         if (serviceEnabled) {
           LocationPermission permission =
               await Geolocator.checkPermission().catchError((_) => LocationPermission.denied);
+          if (permission == LocationPermission.denied) {
+            permission = await Geolocator.requestPermission()
+                .catchError((_) => LocationPermission.denied);
+          }
           if (permission == LocationPermission.whileInUse ||
               permission == LocationPermission.always) {
             Position? pos = await Geolocator.getLastKnownPosition()
                 .timeout(const Duration(seconds: 1), onTimeout: () => null)
                 .catchError((_) => null);
+            pos ??= await Geolocator.getCurrentPosition(
+              desiredAccuracy: LocationAccuracy.low,
+              timeLimit: const Duration(seconds: 2),
+            ).catchError((_) => null);
             if (pos != null) {
               query = '${pos.latitude},${pos.longitude}';
             }
@@ -60,8 +70,9 @@ class WeatherService {
       } catch (_) {}
     }
 
+    // If GPS is unavailable, use WeatherAPI's automatic IP lookup: 'auto:ip'
     if (query.isEmpty) {
-      query = 'giza';
+      query = 'auto:ip';
     }
 
     try {
@@ -70,6 +81,7 @@ class WeatherService {
         queryParameters: {
           'key': _apiKey,
           'q': query,
+          'days': '1',
         },
       );
 
@@ -80,6 +92,51 @@ class WeatherService {
         return WeatherModel.fromJson(data);
       }
     } catch (_) {}
+
+    // Check cached location from onboarding if auto:ip fails
+    try {
+      final cachedLocation = await HiveServiceImpl.get<String>('settings_box', 'user_location');
+      if (cachedLocation != null && cachedLocation.trim().isNotEmpty) {
+        final parts = cachedLocation.split(',');
+        final fallbackCity = parts.length > 1 && parts[1].trim().isNotEmpty
+            ? parts[1].trim()
+            : parts[0].trim();
+        final response = await _dio.get(
+          _baseUrl,
+          queryParameters: {
+            'key': _apiKey,
+            'q': fallbackCity,
+            'days': '1',
+          },
+        );
+        if (response.statusCode == 200 && response.data != null) {
+          final Map<String, dynamic> data = response.data is Map<String, dynamic>
+              ? response.data
+              : Map<String, dynamic>.from(response.data);
+          return WeatherModel.fromJson(data);
+        }
+      }
+    } catch (_) {}
+
+    // Secondary fallback with 'Cairo' if auto:ip fails
+    if (query != 'Cairo') {
+      try {
+        final response = await _dio.get(
+          _baseUrl,
+          queryParameters: {
+            'key': _apiKey,
+            'q': 'Cairo',
+            'days': '1',
+          },
+        );
+        if (response.statusCode == 200 && response.data != null) {
+          final Map<String, dynamic> data = response.data is Map<String, dynamic>
+              ? response.data
+              : Map<String, dynamic>.from(response.data);
+          return WeatherModel.fromJson(data);
+        }
+      } catch (_) {}
+    }
 
     return _buildFallbackWeather();
   }

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -44,7 +45,11 @@ class AuthHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double h = height ?? 230.h;
+    final double topPadding = MediaQuery.paddingOf(context).top;
+    final double minHeaderHeight =
+        topPadding + (stepIndicator != null ? 85.0 : 65.0);
+    final double configuredHeight = height ?? 230.h;
+    final double h = math.max(configuredHeight, minHeaderHeight);
 
     return SizedBox(
       height: h,
@@ -81,6 +86,7 @@ class AuthHeader extends StatelessWidget {
 
           // ─── Top bar (back + optional title + optional step bar) ──────
           SafeArea(
+            bottom: false,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               child: Column(

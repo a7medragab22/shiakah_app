@@ -10,7 +10,13 @@ abstract interface class DI {
     }
     if (!getIt.isRegistered<LoginBloc>() ||
         !getIt.isRegistered<RegisterBloc>() ||
-        !getIt.isRegistered<VerifyOTPBloc>()) {
+        !getIt.isRegistered<VerifyOTPBloc>() ||
+        !getIt.isRegistered<GenderBloc>() ||
+        !getIt.isRegistered<AppearanceBloc>() ||
+        !getIt.isRegistered<BodyBloc>() ||
+        !getIt.isRegistered<PreferencesBloc>() ||
+        !getIt.isRegistered<OnboardingProfileBloc>() ||
+        !getIt.isRegistered<OnboardingStatusBloc>()) {
       AuthServiceLocator.execute(getIt: getIt);
     }
   }

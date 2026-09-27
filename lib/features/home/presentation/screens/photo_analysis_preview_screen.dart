@@ -33,7 +33,8 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const Icon(Icons.check_circle_rounded,
+                color: Colors.white, size: 20),
             const SizedBox(width: 10),
             Text('item_added_closet'.tr()),
           ],

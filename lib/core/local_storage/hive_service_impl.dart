@@ -20,7 +20,12 @@ class HiveServiceImpl implements IUserCache,ITokenCache{
 
   static final HiveServiceImpl instance = HiveServiceImpl._();
 
-  static Future<void> init() async {
+  static Future<void> init([Box<UserModel>? userBox, Box<String>? tokenBox]) async {
+    if (userBox != null && tokenBox != null) {
+      _userBox = userBox;
+      _tokenBox = tokenBox;
+      return;
+    }
     await Hive.initFlutter();
     Hive.registerAdapter(UserModelAdapter());
     //open boxes
@@ -56,10 +61,10 @@ class HiveServiceImpl implements IUserCache,ITokenCache{
 
 
       updatedUser = currentUser.copyWith(
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
+        id: user.id != 0 ? user.id : currentUser.id,
+        name: user.name.isNotEmpty ? user.name : currentUser.name,
+        email: user.email.isNotEmpty ? user.email : currentUser.email,
+        phone: user.phone.isNotEmpty ? user.phone : currentUser.phone,
       );
 
 
