@@ -28,14 +28,9 @@ class GenericDataSource {
         try {
 
 
-          if (paginationParams != null) {
-            final items =
-            (right['result'] as List).map((e) => fromJson(e)).toList();
-
-            return Right(items);
-          }
+          final rawList = right['result'] ?? right['data'] ?? [];
           final items =
-          (right['result'] as List).map((e) => fromJson(e)).toList();
+              (rawList as List).map((e) => fromJson(e)).toList();
           return Right(items);
         } catch (e, stackTrace) {
           loggerError(stackTrace);
@@ -69,10 +64,46 @@ class GenericDataSource {
             return Right(null as T);
           }
           if (T == String) {
-            logger('right: ${right["result"]}');
-            return Right(right["result"] as T);
+            logger('right: ${right["result"] ?? right["data"]}');
+            return Right((right["result"] ?? right["data"] ?? "") as T);
           }
-          return Right(fromJson!(right['result']));
+          final resData = right['result'] ?? right['data'] ?? right;
+          return Right(fromJson!(resData is Map<String, dynamic> ? resData : right));
+        } catch (e, stackTrace) {
+          loggerError(stackTrace);
+          loggerWarn(e.toString());
+          return Left(ParsingFailure(message: e.toString()));
+        }
+      },
+    );
+  }
+
+  Future<Either<Failure, T>> getData<T>({
+    required String endpoint,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+    T Function(Map<String, dynamic>)? fromJson,
+  }) async {
+    final result = await _apiConsumer.get(
+      endpoint,
+      queryParameters: queryParameters,
+      headers: headers,
+    );
+    return result.fold(
+      (left) => Left(left),
+      (right) {
+        try {
+          if (right.containsKey('success') && right['success'] == false) {
+            final msg = right['message']?.toString() ?? 'Operation failed';
+            return Left(ServerFailure(message: msg));
+          }
+          if (T == Null) {
+            return Right(null as T);
+          } else if (fromJson != null) {
+            return Right(fromJson(right));
+          } else {
+            return Right(right as T);
+          }
         } catch (e, stackTrace) {
           loggerError(stackTrace);
           loggerWarn(e.toString());
@@ -85,12 +116,15 @@ class GenericDataSource {
   Future<Either<Failure, T>> postData<T>({
     required String endpoint,
     Map<String, dynamic>? data,
+    FormData? formData,
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? headers,
+    T Function(Map<String, dynamic>)? fromJson,
   }) async {
     final result = await _apiConsumer.post(
       endpoint,
       data: data,
+      formData: formData,
       queryParameters: queryParameters,
       headers: headers,
     );
@@ -98,13 +132,21 @@ class GenericDataSource {
           (left) => Left(left),
           (right) {
         try {
+          if (right.containsKey('success') && right['success'] == false) {
+            final msg = right['message']?.toString() ?? 'Operation failed';
+            return Left(ServerFailure(message: msg));
+          }
           if (T == Null) {
             return Right(null as T);
+          } else if (fromJson != null) {
+            return Right(fromJson(right));
           } else if (T == String) {
             logger('right: $right');
-            return Right(right['result'] ?? "" as T);
+            return Right((right['result'] ?? right['data'] ?? "") as T);
           } else if (T == int) {
-            return Right(right['result'] ?? 0 as T);
+            return Right((right['result'] ?? right['data'] ?? 0) as T);
+          } else if (T == Map<String, dynamic>) {
+            return Right(right as T);
           } else {
             return Right(null as T);
           }

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -39,7 +40,7 @@ class AuthFormCard extends StatelessWidget {
               ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - (vPad * 2),
+                  minHeight: math.max(0.0, constraints.maxHeight - (vPad * 2)),
                 ),
                 child: IntrinsicHeight(
                   child: child,

@@ -20,11 +20,23 @@ class SharedServiceLocator {
               'Cache-Control': 'no-cache',
               'Pragma': 'no-cache',
               'Accept-Language':
-              navigatorKey.currentContext?.isArabic??true ? 'ar' : 'en',
-              'Authorization': 'Bearer $token',
+              navigatorKey.currentContext?.isArabic ?? true ? 'ar' : 'en',
+              if (token != null && token.isNotEmpty)
+                'Authorization': 'Bearer $token',
             },
           ),
         )..interceptors.addAll([
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              final currentToken = HiveServiceImpl.instance.getAccessToken();
+              if (currentToken != null && currentToken.isNotEmpty) {
+                options.headers['Authorization'] = 'Bearer $currentToken';
+              }
+              final isArabic = navigatorKey.currentContext?.isArabic ?? true;
+              options.headers['Accept-Language'] = isArabic ? 'ar' : 'en';
+              handler.next(options);
+            },
+          ),
           if (kDebugMode)
             PrettyDioLogger(
               requestHeader: true,

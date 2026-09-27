@@ -27,7 +27,9 @@ abstract interface class AppRouter {
       ),
       GoRoute(
         path: Routes.verifyOtp,
-        builder: (context, state) => const VerifyOtpScreen(),
+        builder: (context, state) => VerifyOtpScreen(
+          email: state.extra as String?,
+        ),
       ),
       GoRoute(
         path: Routes.styleSetup,

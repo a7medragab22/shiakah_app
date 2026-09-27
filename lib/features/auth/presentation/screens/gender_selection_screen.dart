@@ -1,10 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/bloc/paginated_bloc/exports.dart';
+import '../../../../core/enum/status.dart';
 import '../../../../core/router/router.dart';
+import '../../../../core/service_locator/service_locator.dart';
 import '../../../../core/theme/theme.dart';
+import '../../auth.dart';
 import '../widgets/auth_buttons.dart';
 import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
@@ -21,104 +26,143 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
   String? _selected;
 
   @override
+  void initState() {
+    super.initState();
+    DI.executeSync();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFEFE5D8),
-      body: Column(
-        children: [
-          // ── Header with progress indicator ──────────────────────────
-          AuthHeader(
-            type: AuthHeaderType.image,
-            imagePath: 'assets/images/cloths.jpg',
-            title: 'create_account_title'.tr(),
-            fallbackRoute: Routes.styleSetup,
-            height: 130.h,
-            stepIndicator: const StepProgressIndicator(currentStep: 1),
-          ),
+    return BlocProvider<GenderBloc>(
+      create: (_) => getIt<GenderBloc>(),
+      child: BlocConsumer<GenderBloc, BaseState<GenderResponseModel>>(
+        listener: (context, state) {
+          if (state.status == Status.success) {
+            context.go(Routes.personalInfo);
+          } else if (state.status == Status.failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.errorMessage ?? 'Something went wrong',
+                ),
+                backgroundColor: Colors.red.shade700,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          final bool isLoading = state.status == Status.loading;
 
-          // ── White form card ──────────────────────────────────────────
-          AuthFormCard(
-            child: Column(
+          return Scaffold(
+            backgroundColor: const Color(0xFFEFE5D8),
+            body: Column(
               children: [
-                // Logo
-                Image.asset(
-                  'assets/images/logo.png',
-                  height: 64.h,
-                  fit: BoxFit.contain,
+                // ── Header with progress indicator ──────────────────────────
+                AuthHeader(
+                  type: AuthHeaderType.image,
+                  imagePath: 'assets/images/cloths.jpg',
+                  title: 'create_account_title'.tr(),
+                  fallbackRoute: Routes.styleSetup,
+                  height: 140.h,
+                  stepIndicator: const StepProgressIndicator(currentStep: 1),
                 ),
 
-                SizedBox(height: 14.h),
+                // ── White form card ──────────────────────────────────────────
+                AuthFormCard(
+                  child: Column(
+                    children: [
+                      // Logo
+                      Image.asset(
+                        'assets/images/logo.png',
+                        height: 58.h,
+                        fit: BoxFit.contain,
+                      ),
 
-                // Title
-                Text(
-                  'who_styling_today'.tr(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                      SizedBox(height: 12.h),
+
+                      // Title
+                      Text(
+                        'who_styling_today'.tr(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+
+                      SizedBox(height: 8.h),
+
+                      // Subtitle
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12.w),
+                        child: Text(
+                          'gender_selection_subtitle'.tr(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13.5.sp,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF8E8883),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: 22.h),
+
+                      // Gender cards
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _GenderCard(
+                              label: 'men'.tr(),
+                              imagePath: 'assets/images/man.png',
+                              isSelected: _selected == 'men',
+                              onTap: isLoading
+                                  ? () {}
+                                  : () => setState(() => _selected = 'men'),
+                            ),
+                          ),
+                          SizedBox(width: 16.w),
+                          Expanded(
+                            child: _GenderCard(
+                              label: 'women'.tr(),
+                              imagePath: 'assets/images/women.jpg',
+                              isSelected: _selected == 'women',
+                              onTap: isLoading
+                                  ? () {}
+                                  : () => setState(() => _selected = 'women'),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const Spacer(),
+                      SizedBox(height: 16.h),
+
+                      // Continue — calls gender endpoint
+                      AuthPrimaryButton(
+                        label: 'continue_btn'.tr(),
+                        isEnabled: _selected != null && !isLoading,
+                        isLoading: isLoading,
+                        onPressed: _selected == null || isLoading
+                            ? null
+                            : () {
+                                final int genderId = _selected == 'men' ? 1 : 2;
+                                context.read<GenderBloc>().add(
+                                      GenderSubmitted(gender: genderId),
+                                    );
+                              },
+                      ),
+
+                      SizedBox(height: 8.h),
+                    ],
                   ),
                 ),
-
-                SizedBox(height: 8.h),
-
-                // Subtitle
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w),
-                  child: Text(
-                    'gender_selection_subtitle'.tr(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13.5.sp,
-                      fontWeight: FontWeight.w400,
-                      color: const Color(0xFF8E8883),
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 28.h),
-
-                // Gender cards
-                Row(
-                  children: [
-                    Expanded(
-                      child: _GenderCard(
-                        label: 'men'.tr(),
-                        imagePath: 'assets/images/man.png',
-                        isSelected: _selected == 'men',
-                        onTap: () => setState(() => _selected = 'men'),
-                      ),
-                    ),
-                    SizedBox(width: 16.w),
-                    Expanded(
-                      child: _GenderCard(
-                        label: 'women'.tr(),
-                        imagePath: 'assets/images/women.jpg',
-                        isSelected: _selected == 'women',
-                        onTap: () => setState(() => _selected = 'women'),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const Spacer(),
-                SizedBox(height: 16.h),
-
-                // Continue — enabled only when a gender is selected
-                AuthPrimaryButton(
-                  label: 'continue_btn'.tr(),
-                  isEnabled: _selected != null,
-                  onPressed: _selected == null
-                      ? null
-                      : () => context.go(Routes.personalInfo),
-                ),
-
-                SizedBox(height: 8.h),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -165,14 +209,14 @@ class _GenderCard extends StatelessWidget {
                 ]
               : [],
         ),
-        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
+        padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 8.w),
         child: Column(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12.r),
               child: Image.asset(
                 imagePath,
-                height: 130.h,
+                height: 120.h,
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),

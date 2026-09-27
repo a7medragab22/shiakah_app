@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'core/enum/snack_bar_enum.dart';
-import 'core/helpers/helpers.dart';
 import 'core/local_storage/local_storage.dart';
 import 'core/localization/translation_service.dart';
 import 'core/router/router.dart';
@@ -14,25 +13,13 @@ import 'core/widgets/widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  EasyLocalization.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   await HiveServiceImpl.init();
-  SystemChrome.setPreferredOrientations([
+  await DI.execute();
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
-  ]).then(
-    (_) {
-      runApp(LocalizationService.rootWidget(child: const MyApp()));
-
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final context = navigatorKey.currentContext;
-
-        if (context != null) {
-          await DI.execute();
-        } else {
-          loggerWarn('Navigator context is not available');
-        }
-      });
-    },
-  );
+  ]);
+  runApp(LocalizationService.rootWidget(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {

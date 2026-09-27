@@ -1,20 +1,51 @@
 part of "../../auth.dart";
 
-class VerifyOTPBloc extends Bloc<VerifyOtpEvent, BaseState<void>> {
+class VerifyOTPBloc extends Bloc<VerifyOtpEvent, BaseState<VerifyOtpResponseModel>> {
   final VerifyOTPDataSource _verifyDataSource;
-  VerifyOTPBloc(this._verifyDataSource) : super(const BaseState<void>()) {
-    on<VerifyOtpEvent>(_onVerify);
+  final ITokenCache _tokenCache;
+
+  VerifyOTPBloc(
+    this._verifyDataSource, {
+    ITokenCache? tokenCache,
+  })  : _tokenCache = tokenCache ?? HiveServiceImpl.instance,
+        super(const BaseState<VerifyOtpResponseModel>()) {
+    on<VerifyOtpSubmitted>(_onVerifySubmitted);
   }
-  FutureOr<void> _onVerify(
-      VerifyOtpEvent event, Emitter<BaseState<void>> emit) async {
+
+  FutureOr<void> _onVerifySubmitted(
+    VerifyOtpSubmitted event,
+    Emitter<BaseState<VerifyOtpResponseModel>> emit,
+  ) async {
     emit(state.copyWith(status: Status.loading));
-    final result = await _verifyDataSource.verify(event.email);
-    emit(result.fold(
-      (failure) => state.copyWith(
+    final result = await _verifyDataSource.verifyOtp(
+      email: event.email,
+      otp: event.otp,
+    );
+    await result.fold(
+      (failure) async {
+        emit(state.copyWith(
           status: Status.failure,
           errorMessage: failure.message,
-          failure: failure),
-      (data) => state.copyWith(status: Status.success),
-    ));
+          failure: failure,
+        ));
+      },
+      (responseModel) async {
+        if (responseModel.data != null) {
+          final accessToken = responseModel.data!.accessToken;
+          final refreshToken = responseModel.data!.refreshToken;
+          if (accessToken.isNotEmpty) {
+            await _tokenCache.saveAccessToken(accessToken);
+          }
+          if (refreshToken.isNotEmpty) {
+            await _tokenCache.saveRefreshToken(refreshToken);
+          }
+        }
+        emit(state.copyWith(
+          status: Status.success,
+          data: responseModel,
+          errorMessage: null,
+        ));
+      },
+    );
   }
 }
