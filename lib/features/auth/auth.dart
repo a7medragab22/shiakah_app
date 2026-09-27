@@ -10,6 +10,21 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/helpers/helpers.dart';
+import '../../core/local_storage/local_storage.dart';
+import 'models/login_request_model.dart';
+import 'models/login_response_model.dart';
+import 'models/register_request_model.dart';
+import 'models/register_response_model.dart';
+import 'models/verify_otp_request_model.dart';
+import 'models/verify_otp_response_model.dart';
+
+export 'models/login_request_model.dart';
+export 'models/login_response_model.dart';
+export 'models/register_request_model.dart';
+export 'models/register_response_model.dart';
+export 'models/verify_otp_request_model.dart';
+export 'models/verify_otp_response_model.dart';
+export 'models/user_model.dart';
 
 part '../auth/blocs/forget_password/forget_password_event.dart';
 part '../auth/blocs/forget_password/forget_password_bloc.dart';

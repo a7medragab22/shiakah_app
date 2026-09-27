@@ -1,20 +1,49 @@
 part of "../../auth.dart";
 
-class LoginBloc extends Bloc<LoginEvent, BaseState<void>> {
+class LoginBloc extends Bloc<LoginEvent, BaseState<LoginResponseModel>> {
   final LoginDataSource _loginDataSource;
-  LoginBloc(this._loginDataSource) : super(const BaseState<void>()) {
-    on<LoginEvent>(_onForgetPassword);
+  final ITokenCache _tokenCache;
+
+  LoginBloc(
+    this._loginDataSource, {
+    ITokenCache? tokenCache,
+  })  : _tokenCache = tokenCache ?? HiveServiceImpl.instance,
+        super(const BaseState<LoginResponseModel>()) {
+    on<LoginSubmitted>(_onLoginSubmitted);
   }
-  FutureOr<void> _onForgetPassword(
-      LoginEvent event, Emitter<BaseState<void>> emit) async {
+
+  FutureOr<void> _onLoginSubmitted(
+      LoginSubmitted event, Emitter<BaseState<LoginResponseModel>> emit) async {
     emit(state.copyWith(status: Status.loading));
-    final result = await _loginDataSource.login(event.email);
-    emit(result.fold(
-      (failure) => state.copyWith(
+    final result = await _loginDataSource.login(
+      email: event.email,
+      password: event.password,
+    );
+    await result.fold(
+      (failure) async {
+        emit(state.copyWith(
           status: Status.failure,
           errorMessage: failure.message,
-          failure: failure),
-      (data) => state.copyWith(status: Status.success),
-    ));
+          failure: failure,
+        ));
+      },
+      (responseModel) async {
+        if (responseModel.data != null) {
+          final accessToken = responseModel.data!.accessToken;
+          final refreshToken = responseModel.data!.refreshToken;
+          if (accessToken.isNotEmpty) {
+            await _tokenCache.saveAccessToken(accessToken);
+          }
+          if (refreshToken.isNotEmpty) {
+            await _tokenCache.saveRefreshToken(refreshToken);
+          }
+        }
+        emit(state.copyWith(
+          status: Status.success,
+          data: responseModel,
+          errorMessage: null,
+        ));
+      },
+    );
   }
 }

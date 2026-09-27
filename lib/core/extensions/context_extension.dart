@@ -13,9 +13,12 @@ extension ContextExtensions on BuildContext {
 
   ColorScheme get colorScheme => Theme.of(this).colorScheme;
 
-  bool get isArabic => Localizations.localeOf(this).languageCode == 'ar';
-  bool get isEnglish => Localizations.localeOf(this).languageCode == 'en';
-  bool get isRussion => Localizations.localeOf(this).languageCode == 'ru';
+  bool get isArabic =>
+      (Localizations.maybeLocaleOf(this)?.languageCode ?? 'ar') == 'ar';
+  bool get isEnglish =>
+      Localizations.maybeLocaleOf(this)?.languageCode == 'en';
+  bool get isRussion =>
+      Localizations.maybeLocaleOf(this)?.languageCode == 'ru';
 
   TextDirection get textDirection =>
       isArabic ? TextDirection.rtl : TextDirection.ltr;

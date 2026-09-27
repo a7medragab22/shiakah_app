@@ -12,6 +12,8 @@ class CustomAuthInputField extends StatefulWidget {
   final bool isPassword;
   final IconData? prefixIcon;
   final String? helperText;
+  final String? errorText;
+  final ValueChanged<String>? onChanged;
 
   const CustomAuthInputField({
     super.key,
@@ -22,6 +24,8 @@ class CustomAuthInputField extends StatefulWidget {
     this.isPassword = false,
     this.prefixIcon,
     this.helperText,
+    this.errorText,
+    this.onChanged,
   });
 
   @override
@@ -55,8 +59,10 @@ class _CustomAuthInputFieldState extends State<CustomAuthInputField> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: const Color(0xFFE2D6C6),
-              width: 1.3,
+              color: widget.errorText != null
+                  ? Colors.red.shade400
+                  : const Color(0xFFE2D6C6),
+              width: widget.errorText != null ? 1.5 : 1.3,
             ),
           ),
           child: Row(
@@ -82,6 +88,7 @@ class _CustomAuthInputFieldState extends State<CustomAuthInputField> {
                   controller: widget.controller,
                   keyboardType: widget.keyboardType,
                   obscureText: widget.isPassword ? _obscureText : false,
+                  onChanged: widget.onChanged,
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w500,
@@ -126,7 +133,7 @@ class _CustomAuthInputFieldState extends State<CustomAuthInputField> {
         ),
 
         // Helper text
-        if (widget.helperText != null) ...[
+        if (widget.helperText != null && widget.errorText == null) ...[
           SizedBox(height: 6.h),
           Text(
             widget.helperText!,
@@ -134,6 +141,19 @@ class _CustomAuthInputFieldState extends State<CustomAuthInputField> {
               fontSize: 12.sp,
               color: const Color(0xFF8E8883),
               fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+
+        // Error text
+        if (widget.errorText != null) ...[
+          SizedBox(height: 6.h),
+          Text(
+            widget.errorText!,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.red.shade600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

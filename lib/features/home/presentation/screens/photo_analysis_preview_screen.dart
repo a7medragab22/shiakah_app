@@ -77,9 +77,8 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // ── 1. Top Container (2/3 of Screen) ──────────────────────────────
+            // ── 1. Top Container (Takes Remaining Space) ──────────────────────
             Expanded(
-              flex: 2,
               child: Container(
                 width: double.infinity,
                 margin: EdgeInsets.all(12.w),
@@ -138,27 +137,27 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
               ),
             ),
 
-            // ── 2. Bottom Container (1/3 of Screen) ───────────────────────────
-            Expanded(
-              flex: 1,
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(28.r),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
+            // ── 2. Bottom Container (Action Buttons) ──────────────────────────
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(28.r),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Row 1: Icon Green Circle + Text "Ready for analysis"
                     Row(
@@ -173,7 +172,7 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
                           child: Icon(
                             Icons.check_circle_rounded,
                             color: const Color(0xFF2E7D32),
-                            size: 20.sp,
+                            size: 18.sp,
                           ),
                         ),
                         SizedBox(width: 8.w),
@@ -187,16 +186,18 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                    SizedBox(height: 6.h),
 
                     // Text: "your photo is ready to analyze"
                     Text(
                       'your_photo_ready'.tr(),
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 13.5.sp,
                         fontWeight: FontWeight.w500,
                         color: AppColors.secondary,
                       ),
                     ),
+                    SizedBox(height: 16.h),
 
                     // Row 2: Two Buttons ("Add to My Closet" & "Analyze Item")
                     Row(
@@ -257,6 +258,7 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                    SizedBox(height: 12.h),
 
                     // Retake Text/Icon Button
                     GestureDetector(
@@ -275,7 +277,7 @@ class PhotoAnalysisPreviewScreen extends StatelessWidget {
                             Text(
                               'retake'.tr(),
                               style: TextStyle(
-                                fontSize: 14.sp,
+                                fontSize: 13.5.sp,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.secondary,
                                 decoration: TextDecoration.underline,

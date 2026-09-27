@@ -114,7 +114,7 @@ final class BaseApiConsumer implements ApiConsumer {
         url,
         queryParameters: queryParameters,
         options: Options(headers: headers),
-        data: data,
+        data: formData ?? data,
         onSendProgress: onSendProgress,
         cancelToken: cancelToken,
         onReceiveProgress: onReceiveProgress,

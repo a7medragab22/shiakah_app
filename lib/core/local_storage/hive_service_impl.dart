@@ -11,6 +11,7 @@ class HiveServiceImpl implements IUserCache,ITokenCache{
   // ----------------------- Keys ----------------------
   static const String currentUserKey = 'current_user';
   static const String accessTokenKey = 'access_token';
+  static const String refreshTokenKey = 'refresh_token';
 
   static Box<UserModel>? _userBox;
   static Box<String>? _tokenBox;
@@ -86,6 +87,21 @@ class HiveServiceImpl implements IUserCache,ITokenCache{
   @override
   Future<void> clearAccessToken() async {
     await _tokenBox?.delete(accessTokenKey);
+  }
+
+  @override
+  Future<void> saveRefreshToken(String token) async {
+    await _tokenBox?.put(refreshTokenKey, token);
+  }
+
+  @override
+  String? getRefreshToken() {
+    return _tokenBox?.get(refreshTokenKey);
+  }
+
+  @override
+  Future<void> clearRefreshToken() async {
+    await _tokenBox?.delete(refreshTokenKey);
   }
 
 // ------------------- Paginated Cache ---------------------
