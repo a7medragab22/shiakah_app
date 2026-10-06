@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/local_storage/local_storage.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/router/router.dart';
+import '../../../../core/service_locator/service_locator.dart';
+import '../../../auth/auth.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -74,7 +76,11 @@ class _SplashScreenState extends State<SplashScreen>
           } else {
             final token = HiveServiceImpl.instance.getAccessToken();
             if (token != null && token.isNotEmpty) {
-              context.go(Routes.home);
+              final targetRoute = await getIt<OnboardingStatusDataSource>()
+                  .resolveTargetRouteAndSync();
+              if (mounted) {
+                context.go(targetRoute);
+              }
             } else {
               context.go(Routes.welcome);
             }

@@ -199,48 +199,60 @@ class WeatherCardWidget extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        _formatDate(context, weather.dateString),
-                        style: TextStyle(
-                          fontSize: 13.5.sp,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF9E9893),
+                      Flexible(
+                        child: Text(
+                          _formatDate(context, weather.dateString),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF9E9893),
+                          ),
                         ),
                       ),
-                      Row(
-                        children: [
-                          if (isRefreshing)
-                            Padding(
-                              padding: EdgeInsets.only(right: 6.w),
-                              child: SizedBox(
-                                width: 12.w,
-                                height: 12.w,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Color(0xFFB5956A),
+                      SizedBox(width: 8.w),
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isRefreshing)
+                              Padding(
+                                padding: EdgeInsets.only(right: 6.w),
+                                child: SizedBox(
+                                  width: 12.w,
+                                  height: 12.w,
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFFB5956A),
+                                  ),
+                                ),
+                              )
+                            else
+                              Icon(
+                                Icons.location_on_outlined,
+                                size: 16.sp,
+                                color: const Color(0xFFB5956A),
+                              ),
+                            SizedBox(width: 4.w),
+                            Flexible(
+                              child: Text(
+                                AppLocalizationHelper.formatLocation(
+                                  context,
+                                  weather.cityName,
+                                  weather.countryName,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFB5956A),
                                 ),
                               ),
-                            )
-                          else
-                            Icon(
-                              Icons.location_on_outlined,
-                              size: 16.sp,
-                              color: const Color(0xFFB5956A),
                             ),
-                          SizedBox(width: 4.w),
-                          Text(
-                            AppLocalizationHelper.formatLocation(
-                              context,
-                              weather.cityName,
-                              weather.countryName,
-                            ),
-                            style: TextStyle(
-                              fontSize: 13.5.sp,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFFB5956A),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -252,20 +264,27 @@ class WeatherCardWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Left: Dynamic Weather Icon + Condition Text
-                      Row(
-                        children: [
-                          _buildWeatherIcon(weather),
-                          SizedBox(width: 8.w),
-                          Text(
-                            _localizeCondition(context, weather.conditionText),
-                            style: TextStyle(
-                              fontSize: 20.sp,
-                              fontWeight: FontWeight.w600,
-                              color: themeColor,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            _buildWeatherIcon(weather),
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: Text(
+                                _localizeCondition(context, weather.conditionText),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 19.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: themeColor,
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      SizedBox(width: 10.w),
 
                       // Right: Temperature + High/Low
                       Column(
@@ -284,7 +303,7 @@ class WeatherCardWidget extends StatelessWidget {
                           Text(
                             '${'high_short'.tr()}:${weather.maxTempC.round()}°   ${'low_short'.tr()}:${weather.minTempC.round()}°',
                             style: TextStyle(
-                              fontSize: 12.5.sp,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w500,
                               color: const Color(0xFF8E8883),
                             ),
@@ -367,11 +386,13 @@ class WeatherCardWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'weather_error'.tr(),
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: AppColors.secondary,
+          Expanded(
+            child: Text(
+              'weather_error'.tr(),
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: AppColors.secondary,
+              ),
             ),
           ),
           TextButton(

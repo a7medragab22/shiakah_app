@@ -11,15 +11,17 @@ class AuthPrimaryButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.isEnabled = true,
+    this.isLoading = false,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool isEnabled;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
-    final bool active = isEnabled && onPressed != null;
+    final bool active = isEnabled && !isLoading && onPressed != null;
 
     return SizedBox(
       width: double.infinity,
@@ -36,14 +38,23 @@ class AuthPrimaryButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(14.r),
           ),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 17.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
+        child: isLoading
+            ? SizedBox(
+                width: 22.w,
+                height: 22.w,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Text(
+                label,
+                style: TextStyle(
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
       ),
     );
   }
