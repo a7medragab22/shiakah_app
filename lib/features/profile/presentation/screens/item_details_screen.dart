@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/helpers/helpers.dart';
+import '../../../../core/http/http.dart';
 import '../../../../core/theme/theme.dart';
 import 'more_details_screen.dart';
 
@@ -537,6 +538,14 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
   }
 
   Widget _buildItemImage(String path, BoxFit fit) {
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return Image.network(
+        path,
+        fit: fit,
+        errorBuilder: (_, __, ___) => _buildFallbackImage(),
+      );
+    }
+
     if (path.startsWith('assets/')) {
       return Image.asset(
         path,
@@ -549,6 +558,18 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
     if (file.existsSync()) {
       return Image.file(
         file,
+        fit: fit,
+        errorBuilder: (_, __, ___) => _buildFallbackImage(),
+      );
+    }
+
+    if (path.contains('Images/') || path.contains('WardrobeItems/')) {
+      final cleanBase = Endpoints.baseUrl.endsWith('/')
+          ? Endpoints.baseUrl.substring(0, Endpoints.baseUrl.length - 1)
+          : Endpoints.baseUrl;
+      final cleanPath = path.startsWith('/') ? path : '/$path';
+      return Image.network(
+        '$cleanBase$cleanPath',
         fit: fit,
         errorBuilder: (_, __, ___) => _buildFallbackImage(),
       );

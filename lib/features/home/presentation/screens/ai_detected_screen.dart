@@ -3,7 +3,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/extensions/extensions.dart';
 import '../../../../core/localization/app_localization_helper.dart';
+import '../../../../core/service_locator/scanner/scanner.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../profile/presentation/screens/item_details_screen.dart';
 
@@ -14,6 +16,7 @@ class AiDetectedScreen extends StatefulWidget {
   final String colorName;
   final int colorHex;
   final String fitName;
+  final ItemAttributes? attributes;
 
   const AiDetectedScreen({
     super.key,
@@ -23,6 +26,7 @@ class AiDetectedScreen extends StatefulWidget {
     this.colorName = 'Off-White',
     this.colorHex = 0xFFFFFAFA,
     this.fitName = 'Regular',
+    this.attributes,
   });
 
   @override
@@ -155,34 +159,121 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: 10.h),
+
+                          // Optional Low Confidence Warning Banner
+                          if (widget.attributes?.isLowConfidence == true) ...[
+                            Container(
+                              margin: EdgeInsets.only(bottom: 10.h),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 10.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF8E1),
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
+                                  color: const Color(0xFFFFE082),
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline_rounded,
+                                    color: const Color(0xFFFFA000),
+                                    size: 18.sp,
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Expanded(
+                                    child: Text(
+                                      'could_not_clearly_detect'.tr(),
+                                      style: TextStyle(
+                                        fontSize: 12.5.sp,
+                                        color: const Color(0xFF6D4C41),
+                                        height: 1.35,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
 
                           Divider(color: const Color(0xFFEFECE8), height: 1.h),
                           SizedBox(height: 4.h),
 
                           // ── Attributes Rows ─────────────────────────
+                          // 1. Category
                           _buildAttributeRow(
                             label: '${'category'.tr()}:',
-                            value: AppLocalizationHelper.translateCategory(context, widget.categoryTitle),
+                            value: AppLocalizationHelper.translateCategory(
+                              context,
+                              widget.attributes?.category ?? widget.categoryTitle,
+                            ),
+                            confidence: widget.attributes?.confidenceOf('category'),
                           ),
                           Divider(color: const Color(0xFFEFECE8), height: 1.h),
 
+                          // 2. Subcategory (if present and distinct from category)
+                          if (widget.attributes?.subcategory != null &&
+                              widget.attributes!.subcategory != widget.attributes?.category) ...[
+                            _buildAttributeRow(
+                              label: '${'category'.tr()} (Sub):',
+                              value: AppLocalizationHelper.translateCategory(
+                                context,
+                                widget.attributes!.subcategory!,
+                              ),
+                              confidence: widget.attributes?.confidenceOf('subcategory'),
+                            ),
+                            Divider(color: const Color(0xFFEFECE8), height: 1.h),
+                          ],
+
+                          // 3. Style / Fit
                           _buildAttributeRow(
                             label: '${'fit'.tr()}:',
-                            value: AppLocalizationHelper.translateFit(context, widget.fitName),
+                            value: AppLocalizationHelper.translateFit(
+                              context,
+                              widget.attributes?.style ?? widget.fitName,
+                            ),
+                            confidence: widget.attributes?.confidenceOf('style'),
                           ),
                           Divider(color: const Color(0xFFEFECE8), height: 1.h),
 
+                          // 4. Dominant Color
                           _buildColorAttributeRow(
                             label: '${'colors_found'.tr()}:',
-                            colorName: AppLocalizationHelper.translateColorName(context, widget.colorName),
-                            colorHex: widget.colorHex,
+                            colorName: (context.isArabic &&
+                                    widget.attributes?.dominantColorAr != null)
+                                ? widget.attributes!.dominantColorAr!
+                                : AppLocalizationHelper.translateColorName(
+                                    context,
+                                    widget.attributes?.dominantColor ?? widget.colorName,
+                                  ),
+                            colorHex: ColorPalette.hexForName(widget.attributes?.dominantColor) ??
+                                widget.colorHex,
+                            confidence: widget.attributes?.confidenceOf('dominantColor'),
                           ),
                           Divider(color: const Color(0xFFEFECE8), height: 1.h),
 
+                          // 5. Season (if available from scanner)
+                          if (widget.attributes?.season != null) ...[
+                            _buildAttributeRow(
+                              label: '${'season'.tr()}:',
+                              value: widget.attributes!.season!,
+                              confidence: widget.attributes?.confidenceOf('season'),
+                            ),
+                            Divider(color: const Color(0xFFEFECE8), height: 1.h),
+                          ],
+
+                          // 6. Pattern
                           _buildAttributeRow(
                             label: '${'pattern'.tr()}:',
-                            value: AppLocalizationHelper.translatePattern(context, widget.patternName),
+                            value: AppLocalizationHelper.translatePattern(
+                              context,
+                              widget.patternName,
+                            ),
                           ),
                           SizedBox(height: 24.h),
 
@@ -254,7 +345,9 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const ItemDetailsScreen(),
+                                    builder: (_) => ItemDetailsScreen(
+                                      initialImage: widget.imagePath,
+                                    ),
                                   ),
                                 );
                               },
@@ -288,7 +381,11 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
     );
   }
 
-  Widget _buildAttributeRow({required String label, required String value}) {
+  Widget _buildAttributeRow({
+    required String label,
+    required String value,
+    double? confidence,
+  }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 10.h),
       child: Row(
@@ -310,6 +407,28 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
               color: const Color(0xFF2C2520),
             ),
           ),
+          if (confidence != null) ...[
+            SizedBox(width: 8.w),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+              decoration: BoxDecoration(
+                color: confidence >= 0.5
+                    ? const Color(0xFFE8F5E9)
+                    : const Color(0xFFFFF3E0),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Text(
+                '${(confidence * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: confidence >= 0.5
+                      ? const Color(0xFF2E7D32)
+                      : const Color(0xFFE65100),
+                ),
+              ),
+            ),
+          ],
           const Spacer(),
           Icon(
             Icons.chevron_right_rounded,
@@ -325,6 +444,7 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
     required String label,
     required String colorName,
     required int colorHex,
+    double? confidence,
   }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 10.h),
@@ -360,6 +480,28 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
               color: const Color(0xFF2C2520),
             ),
           ),
+          if (confidence != null) ...[
+            SizedBox(width: 8.w),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+              decoration: BoxDecoration(
+                color: confidence >= 0.5
+                    ? const Color(0xFFE8F5E9)
+                    : const Color(0xFFFFF3E0),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Text(
+                '${(confidence * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: confidence >= 0.5
+                      ? const Color(0xFF2E7D32)
+                      : const Color(0xFFE65100),
+                ),
+              ),
+            ),
+          ],
           const Spacer(),
           Icon(
             Icons.chevron_right_rounded,

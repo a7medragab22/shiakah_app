@@ -42,24 +42,23 @@ android {
 
     signingConfigs {
         release {
-            def storeFilePath = keystoreProperties.getProperty('storeFile', 'upload-keystore.jks')
-            storeFile = storeFilePath ? file(storeFilePath) : null
-
-            keyAlias = keystoreProperties.getProperty('keyAlias', "upload")
-            keyPassword = keystoreProperties.getProperty('keyPassword', "123456789")
-            storePassword = keystoreProperties.getProperty('storePassword', "123456789")
-
-            if (storeFile == null || !storeFile.exists()) {
-                logger.warn("⚠ Keystore file not found at ${storeFilePath}. Release signing may fail.")
+            if (keystorePropertiesFile.exists()) {
+                def storeFilePath = keystoreProperties.getProperty('storeFile')
+                storeFile = storeFilePath ? file(storeFilePath) : null
+                keyAlias = keystoreProperties.getProperty('keyAlias')
+                keyPassword = keystoreProperties.getProperty('keyPassword')
+                storePassword = keystoreProperties.getProperty('storePassword')
             }
         }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.release
+            // Uses production keystore when keystore.properties exists,
+            // otherwise falls back to debug signing so release APK builds succeed.
+            signingConfig = (keystorePropertiesFile.exists() && signingConfigs.release.storeFile?.exists())
+                    ? signingConfigs.release
+                    : signingConfigs.debug
         }
     }
 }

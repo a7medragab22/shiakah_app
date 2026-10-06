@@ -26,8 +26,8 @@ class PaginationHandler<T, B extends BlocBase<BaseState<T>>> {
     final result = await fetchFunction(currentPage, pageSize, params);
     await result.fold((failure) async {
       // On failure, load from cache if available
-      if(cacheKey != null){
-        final cached = await getIt<IPaginatedCache<T>>().getCachedPage(cacheKey: cacheKey!);
+      if (cacheKey != null) {
+        final cached = await getIt<IPaginatedCache<T>>().getCachedPage(cacheKey: cacheKey);
         if (cached.isNotEmpty) {
           items = cached;
           bloc.emit(bloc.state
@@ -42,7 +42,7 @@ class PaginationHandler<T, B extends BlocBase<BaseState<T>>> {
       items.addAll(data);
       if (cacheKey != null) {
         await getIt<IPaginatedCache<T>>().cachePage(items,
-            cacheKey: cacheKey!); // Cache the first page
+            cacheKey: cacheKey); // Cache the first page
       }
       if (data.length >= pageSize) {
         currentPage++;
