@@ -27,7 +27,9 @@ abstract interface class AppRouter {
       ),
       GoRoute(
         path: Routes.verifyOtp,
-        builder: (context, state) => const VerifyOtpScreen(),
+        builder: (context, state) => VerifyOtpScreen(
+          email: state.extra as String?,
+        ),
       ),
       GoRoute(
         path: Routes.styleSetup,
@@ -61,6 +63,10 @@ abstract interface class AppRouter {
         path: Routes.profile,
         builder: (context, state) => const ProfileScreen(),
       ),
+      GoRoute(
+        path: Routes.itemDetails,
+        builder: (context, state) => const ItemDetailsScreen(),
+      ),
     ],
   );
 
@@ -81,6 +87,7 @@ abstract interface class AppRouter {
     } else {
       return MaterialApp.router(
         scaffoldMessengerKey: scaffoldMessengerKey,
+        debugShowCheckedModeBanner: false,
         routerConfig: router,
         title: 'Flutter Demo',
         theme: ThemeData.light(),

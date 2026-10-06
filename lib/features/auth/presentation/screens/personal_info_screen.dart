@@ -1,16 +1,20 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/bloc/paginated_bloc/exports.dart';
+import '../../../../core/enum/status.dart';
 import '../../../../core/router/router.dart';
+import '../../../../core/service_locator/service_locator.dart';
 import '../../../../core/theme/theme.dart';
+import '../../auth.dart';
 import '../widgets/auth_buttons.dart';
 import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/step_progress_indicator.dart';
 
-/// Step 2 of 5 in the style-setup flow.
-/// Collects age group and skin tone from the user.
 class PersonalInfoScreen extends StatefulWidget {
   const PersonalInfoScreen({super.key});
 
@@ -35,244 +39,284 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   bool _ageExpanded = true;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFEFE5D8),
-      body: Column(
-        children: [
-          // ── Header with step 2 progress ─────────────────────────────
-          AuthHeader(
-            type: AuthHeaderType.image,
-            imagePath: 'assets/images/cloths.jpg',
-            title: 'Create Account',
-            fallbackRoute: Routes.genderSelection,
-            height: 130.h,
-            stepIndicator: const StepProgressIndicator(currentStep: 2),
-          ),
+  void initState() {
+    super.initState();
+    DI.executeSync();
+  }
 
-          // ── White form card ──────────────────────────────────────────
-          AuthFormCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider<AppearanceBloc>(
+      create: (_) => getIt<AppearanceBloc>(),
+      child: BlocConsumer<AppearanceBloc, BaseState<AppearanceResponseModel>>(
+        listener: (context, state) {
+          if (state.status == Status.success) {
+            context.go(Routes.bodyType);
+          } else if (state.status == Status.failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.errorMessage ?? 'Something went wrong',
+                ),
+                backgroundColor: Colors.red.shade700,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          final bool isLoading = state.status == Status.loading;
+          final bool isEnabled =
+              _selectedAge != null && _selectedSkinIndex != null && !isLoading;
+
+          return Scaffold(
+            backgroundColor: const Color(0xFFEFE5D8),
+            body: Column(
               children: [
-                // Logo + title + subtitle (centered)
-                Center(
-                  child: Column(
-                    children: [
-                      Image.asset(
-                        'assets/images/logo.png',
-                        height: 64.h,
-                        fit: BoxFit.contain,
-                      ),
-                      SizedBox(height: 14.h),
-                      Text(
-                        'Tell us about yourself',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w),
-                        child: Text(
-                          'This helps us personalize your avatar and outfit recommendations.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 13.5.sp,
-                            color: const Color(0xFF8E8883),
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                // ── Header with step 2 progress ─────────────────────────────
+                AuthHeader(
+                  type: AuthHeaderType.image,
+                  imagePath: 'assets/images/cloths.jpg',
+                  title: 'create_account_title'.tr(),
+                  fallbackRoute: Routes.genderSelection,
+                  height: 140.h,
+                  stepIndicator: const StepProgressIndicator(currentStep: 2),
                 ),
 
-                SizedBox(height: 22.h),
-
-                // ── Age Group section ──────────────────────────────────
-                _SectionCard(
+                // ── White form card ──────────────────────────────────────────
+                AuthFormCard(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Section header with expand/collapse
-                      GestureDetector(
-                        onTap: () =>
-                            setState(() => _ageExpanded = !_ageExpanded),
-                        behavior: HitTestBehavior.opaque,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      // Logo + title + subtitle (centered)
+                      Center(
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/logo.png',
+                              height: 58.h,
+                              fit: BoxFit.contain,
+                            ),
+                            SizedBox(height: 12.h),
+                            Text(
+                              'tell_us_about_yourself'.tr(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12.w),
+                              child: Text(
+                                'personal_info_subtitle'.tr(),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13.5.sp,
+                                  color: const Color(0xFF8E8883),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: 20.h),
+
+                      // ── Age Group section ──────────────────────────────────
+                      _SectionCard(
+                        child: Column(
+                          children: [
+                            // Section header with expand/collapse
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => _ageExpanded = !_ageExpanded),
+                              behavior: HitTestBehavior.opaque,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'age_group'.tr(),
+                                    style: TextStyle(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  Icon(
+                                    _ageExpanded
+                                        ? Icons.keyboard_arrow_up_rounded
+                                        : Icons.keyboard_arrow_down_rounded,
+                                    color: AppColors.textPrimary,
+                                    size: 22.sp,
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Radio options
+                            if (_ageExpanded)
+                              Column(
+                                children: _ageGroups.map((age) {
+                                  final bool selected = _selectedAge == age;
+                                  return GestureDetector(
+                                    onTap: isLoading
+                                        ? null
+                                        : () => setState(
+                                            () => _selectedAge = age),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 7.h),
+                                      child: Row(
+                                        children: [
+                                          _RadioDot(selected: selected),
+                                          SizedBox(width: 12.w),
+                                          Text(
+                                            age,
+                                            style: TextStyle(
+                                              fontSize: 15.sp,
+                                              fontWeight: selected
+                                                  ? FontWeight.w700
+                                                  : FontWeight.w400,
+                                              color: selected
+                                                  ? const Color(0xFFB5956A)
+                                                  : const Color(0xFF8E8883),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: 14.h),
+
+                      // ── Skin Tone section ──────────────────────────────────
+                      _SectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Age Group',
+                              'skin_tone'.tr(),
                               style: TextStyle(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
                               ),
                             ),
-                            Icon(
-                              _ageExpanded
-                                  ? Icons.keyboard_arrow_up_rounded
-                                  : Icons.keyboard_arrow_down_rounded,
-                              color: AppColors.textPrimary,
-                              size: 22.sp,
+
+                            SizedBox(height: 14.h),
+
+                            // Avatar preview
+                            Center(
+                              child: Container(
+                                width: 68.w,
+                                height: 68.w,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: _selectedSkinIndex != null
+                                        ? _skinTones[_selectedSkinIndex!]
+                                        : const Color(0xFFE2D6C6),
+                                    width: 2.5,
+                                  ),
+                                ),
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    'assets/images/man.png',
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: 14.h),
+
+                            // Skin tone colour swatches
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: List.generate(_skinTones.length, (i) {
+                                final bool selected = _selectedSkinIndex == i;
+                                return GestureDetector(
+                                  onTap: isLoading
+                                      ? null
+                                      : () => setState(
+                                          () => _selectedSkinIndex = i),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 180),
+                                    width: 38.w,
+                                    height: 38.w,
+                                    decoration: BoxDecoration(
+                                      color: _skinTones[i],
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: selected
+                                            ? const Color(0xFFB5956A)
+                                            : Colors.transparent,
+                                        width: 2.5,
+                                      ),
+                                      boxShadow: selected
+                                          ? [
+                                              BoxShadow(
+                                                color: _skinTones[i]
+                                                    .withValues(alpha: 0.5),
+                                                blurRadius: 8,
+                                                spreadRadius: 1,
+                                              ),
+                                            ]
+                                          : [],
+                                    ),
+                                  ),
+                                );
+                              }),
                             ),
                           ],
                         ),
                       ),
 
-                      // Radio options (animated visibility)
-                      AnimatedCrossFade(
-                        duration: const Duration(milliseconds: 220),
-                        crossFadeState: _ageExpanded
-                            ? CrossFadeState.showFirst
-                            : CrossFadeState.showSecond,
-                        firstChild: Column(
-                          children: _ageGroups.map((age) {
-                            final bool selected = _selectedAge == age;
-                            return GestureDetector(
-                              onTap: () =>
-                                  setState(() => _selectedAge = age),
-                              behavior: HitTestBehavior.opaque,
-                              child: Padding(
-                                padding:
-                                    EdgeInsets.symmetric(vertical: 7.h),
-                                child: Row(
-                                  children: [
-                                    _RadioDot(selected: selected),
-                                    SizedBox(width: 12.w),
-                                    Text(
-                                      age,
-                                      style: TextStyle(
-                                        fontSize: 15.sp,
-                                        fontWeight: selected
-                                            ? FontWeight.w700
-                                            : FontWeight.w400,
-                                        color: selected
-                                            ? const Color(0xFFB5956A)
-                                            : const Color(0xFF8E8883),
+                      SizedBox(height: 20.h),
+
+                      // Continue button
+                      AuthPrimaryButton(
+                        label: 'continue_btn'.tr(),
+                        isEnabled: isEnabled,
+                        isLoading: isLoading,
+                        onPressed: isEnabled
+                            ? () {
+                                final int ageRange =
+                                    _ageGroups.indexOf(_selectedAge!) + 1;
+                                final int skinTone = _selectedSkinIndex! + 1;
+                                context.read<AppearanceBloc>().add(
+                                      AppearanceSubmitted(
+                                        ageRange: ageRange,
+                                        skinTone: skinTone,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                        secondChild: const SizedBox.shrink(),
+                                    );
+                              }
+                            : null,
                       ),
+
+                      SizedBox(height: 8.h),
                     ],
                   ),
                 ),
-
-                SizedBox(height: 14.h),
-
-                // ── Skin Tone section ──────────────────────────────────
-                _SectionCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Skin Tone',
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-
-                      SizedBox(height: 16.h),
-
-                      // Avatar preview
-                      Center(
-                        child: Container(
-                          width: 72.w,
-                          height: 72.w,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFFE2D6C6),
-                              width: 2,
-                            ),
-                          ),
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/images/man.png',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: 16.h),
-
-                      // Skin tone colour swatches
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(_skinTones.length, (i) {
-                          final bool selected = _selectedSkinIndex == i;
-                          return GestureDetector(
-                            onTap: () =>
-                                setState(() => _selectedSkinIndex = i),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              width: 38.w,
-                              height: 38.w,
-                              decoration: BoxDecoration(
-                                color: _skinTones[i],
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: selected
-                                      ? const Color(0xFFB5956A)
-                                      : Colors.transparent,
-                                  width: 2.5,
-                                ),
-                                boxShadow: selected
-                                    ? [
-                                        BoxShadow(
-                                          color: _skinTones[i]
-                                              .withValues(alpha: 0.5),
-                                          blurRadius: 8,
-                                          spreadRadius: 1,
-                                        ),
-                                      ]
-                                    : [],
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const Spacer(),
-                SizedBox(height: 16.h),
-
-                // Continue button
-                AuthPrimaryButton(
-                  label: 'Continue',
-                  onPressed: () => context.go(Routes.bodyType),
-                ),
-
-                SizedBox(height: 8.h),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Private helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Rounded card container used for each section on this screen.
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.child});
   final Widget child;
@@ -292,7 +336,6 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-/// Circular radio indicator dot.
 class _RadioDot extends StatelessWidget {
   const _RadioDot({required this.selected});
   final bool selected;

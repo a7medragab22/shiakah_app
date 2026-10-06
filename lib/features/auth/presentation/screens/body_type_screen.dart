@@ -1,9 +1,15 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/bloc/paginated_bloc/exports.dart';
+import '../../../../core/enum/status.dart';
 import '../../../../core/router/router.dart';
+import '../../../../core/service_locator/service_locator.dart';
 import '../../../../core/theme/theme.dart';
+import '../../auth.dart';
 import '../widgets/auth_buttons.dart';
 import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
@@ -11,20 +17,18 @@ import '../widgets/step_progress_indicator.dart';
 
 class _BodyTypeItem {
   final String id;
-  final String title;
-  final String subtitle;
+  final String titleKey;
+  final String subtitleKey;
   final String imagePath;
 
   const _BodyTypeItem({
     required this.id,
-    required this.title,
-    required this.subtitle,
+    required this.titleKey,
+    required this.subtitleKey,
     required this.imagePath,
   });
 }
 
-/// Step 3 of 5 in the style-setup flow.
-/// Collects height, weight, and body type from the user.
 class BodyTypeScreen extends StatefulWidget {
   const BodyTypeScreen({super.key});
 
@@ -43,20 +47,20 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
   static const List<_BodyTypeItem> _topRowItems = [
     _BodyTypeItem(
       id: 'slim',
-      title: 'Slim',
-      subtitle: 'Lean physique.',
+      titleKey: 'slim',
+      subtitleKey: 'lean_physique',
       imagePath: 'assets/images/body_type/slim.png',
     ),
     _BodyTypeItem(
       id: 'regular',
-      title: 'Regular',
-      subtitle: 'Balanced physique.',
+      titleKey: 'regular',
+      subtitleKey: 'balanced_physique',
       imagePath: 'assets/images/body_type/regular.png',
     ),
     _BodyTypeItem(
       id: 'athletic',
-      title: 'Athletic',
-      subtitle: 'Athletic build.',
+      titleKey: 'athletic',
+      subtitleKey: 'athletic_build',
       imagePath: 'assets/images/body_type/athletic.png',
     ),
   ];
@@ -64,20 +68,34 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
   static const List<_BodyTypeItem> _bottomRowItems = [
     _BodyTypeItem(
       id: 'stocky',
-      title: 'Stocky',
-      subtitle: 'Broad build.',
+      titleKey: 'stocky',
+      subtitleKey: 'broad_build',
       imagePath: 'assets/images/body_type/stocky.png',
     ),
     _BodyTypeItem(
       id: 'plus_size',
-      title: 'Plus Size',
-      subtitle: 'Fuller build.',
+      titleKey: 'plus_size',
+      subtitleKey: 'fuller_build',
       imagePath: 'assets/images/body_type/plus_size.png',
     ),
   ];
 
   @override
+  void initState() {
+    super.initState();
+    DI.executeSync();
+    _heightController.addListener(_onTextChanged);
+    _weightController.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    setState(() {});
+  }
+
+  @override
   void dispose() {
+    _heightController.removeListener(_onTextChanged);
+    _weightController.removeListener(_onTextChanged);
     _heightController.dispose();
     _weightController.dispose();
     super.dispose();
@@ -85,172 +103,223 @@ class _BodyTypeScreenState extends State<BodyTypeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFEFE5D8),
-      body: Column(
-        children: [
-          // ── Header with Step 3 Progress ──────────────────────────────
-          AuthHeader(
-            type: AuthHeaderType.image,
-            imagePath: 'assets/images/cloths.jpg',
-            title: 'Create Account',
-            fallbackRoute: Routes.personalInfo,
-            height: 130.h,
-            stepIndicator: const StepProgressIndicator(currentStep: 3),
-          ),
+    return BlocProvider<BodyBloc>(
+      create: (_) => getIt<BodyBloc>(),
+      child: BlocConsumer<BodyBloc, BaseState<BodyResponseModel>>(
+        listener: (context, state) {
+          if (state.status == Status.success) {
+            context.go(Routes.defineStyle);
+          } else if (state.status == Status.failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.errorMessage ?? 'Something went wrong',
+                ),
+                backgroundColor: Colors.red.shade700,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          final bool isLoading = state.status == Status.loading;
+          final String heightText = _heightController.text.trim();
+          final String weightText = _weightController.text.trim();
+          final bool isEnabled =
+              heightText.isNotEmpty && weightText.isNotEmpty && !isLoading;
 
-          // ── White Form Card ──────────────────────────────────────────
-          AuthFormCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          return Scaffold(
+            backgroundColor: const Color(0xFFEFE5D8),
+            body: Column(
               children: [
-                // Logo + Title + Subtitle
-                Center(
+                // ── Header with Step 3 Progress ──────────────────────────────
+                AuthHeader(
+                  type: AuthHeaderType.image,
+                  imagePath: 'assets/images/cloths.jpg',
+                  title: 'create_account_title'.tr(),
+                  fallbackRoute: Routes.personalInfo,
+                  height: 140.h,
+                  stepIndicator: const StepProgressIndicator(currentStep: 3),
+                ),
+
+                // ── White Form Card ──────────────────────────────────────────
+                AuthFormCard(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.asset(
-                        'assets/images/logo.png',
-                        height: 64.h,
-                        fit: BoxFit.contain,
+                      // Logo + Title + Subtitle
+                      Center(
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/logo.png',
+                              height: 58.h,
+                              fit: BoxFit.contain,
+                            ),
+                            SizedBox(height: 12.h),
+                            Text(
+                              'tell_us_about_body'.tr(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12.w),
+                              child: Text(
+                                'body_type_subtitle'.tr(),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13.5.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xFF8E8883),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      SizedBox(height: 14.h),
+
+                      SizedBox(height: 20.h),
+
+                      // ── Height & Weight Row ─────────────────────────────────
+                      Row(
+                        children: [
+                          // Height Field
+                          Expanded(
+                            child: _MeasurementField(
+                              label: 'height'.tr(),
+                              controller: _heightController,
+                              enabled: !isLoading,
+                            ),
+                          ),
+                          SizedBox(width: 14.w),
+                          // Weight Field
+                          Expanded(
+                            child: _MeasurementField(
+                              label: 'weight'.tr(),
+                              controller: _weightController,
+                              enabled: !isLoading,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: 18.h),
+
+                      // ── Body Type Section ───────────────────────────────────
                       Text(
-                        'Tell us about your body',
-                        textAlign: TextAlign.center,
+                        'body_type'.tr(),
                         style: TextStyle(
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      SizedBox(height: 8.h),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w),
-                        child: Text(
-                          'This helps us recommend outfits that fit you better and improve your AI avatar.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 13.5.sp,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF8E8883),
-                            height: 1.4,
-                          ),
-                        ),
+
+                      SizedBox(height: 12.h),
+
+                      // Top Row: 3 items (Slim, Regular, Athletic)
+                      Row(
+                        children: _topRowItems.map((item) {
+                          final bool isSelected = _selectedBodyType == item.id;
+                          return Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4.w),
+                              child: _BodyTypeCard(
+                                item: item,
+                                isSelected: isSelected,
+                                onTap: isLoading
+                                    ? () {}
+                                    : () => setState(
+                                        () => _selectedBodyType = item.id),
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
+
+                      SizedBox(height: 10.h),
+
+                      // Bottom Row: 2 items (Stocky, Plus Size)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(width: 36.w),
+                          ..._bottomRowItems.map((item) {
+                            final bool isSelected = _selectedBodyType == item.id;
+                            return Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 4.w),
+                                child: _BodyTypeCard(
+                                  item: item,
+                                  isSelected: isSelected,
+                                  onTap: isLoading
+                                      ? () {}
+                                      : () => setState(
+                                          () => _selectedBodyType = item.id),
+                                ),
+                              ),
+                            );
+                          }),
+                          SizedBox(width: 36.w),
+                        ],
+                      ),
+
+                      SizedBox(height: 20.h),
+
+                      // ── Continue Button ─────────────────────────────────────
+                      AuthPrimaryButton(
+                        label: 'continue_btn'.tr(),
+                        isEnabled: isEnabled,
+                        isLoading: isLoading,
+                        onPressed: isEnabled
+                            ? () {
+                                final double height =
+                                    double.tryParse(heightText) ?? 0.0;
+                                final double weight =
+                                    double.tryParse(weightText) ?? 0.0;
+                                final int bodyType = BodyType.fromString(
+                                  _selectedBodyType,
+                                ).value;
+
+                                context.read<BodyBloc>().add(
+                                      BodySubmitted(
+                                        height: height,
+                                        weight: weight,
+                                        bodyType: bodyType,
+                                      ),
+                                    );
+                              }
+                            : null,
+                      ),
+
+                      SizedBox(height: 8.h),
                     ],
                   ),
                 ),
-
-                SizedBox(height: 22.h),
-
-                // ── Height & Weight Row ─────────────────────────────────
-                Row(
-                  children: [
-                    // Height Field
-                    Expanded(
-                      child: _MeasurementField(
-                        label: 'Height',
-                        controller: _heightController,
-                      ),
-                    ),
-                    SizedBox(width: 14.w),
-                    // Weight Field
-                    Expanded(
-                      child: _MeasurementField(
-                        label: 'Weight',
-                        controller: _weightController,
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 20.h),
-
-                // ── Body Type Section ───────────────────────────────────
-                Text(
-                  'Body Type',
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                SizedBox(height: 12.h),
-
-                // Top Row: 3 items (Slim, Regular, Athletic)
-                Row(
-                  children: _topRowItems.map((item) {
-                    final bool isSelected = _selectedBodyType == item.id;
-                    return Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4.w),
-                        child: _BodyTypeCard(
-                          item: item,
-                          isSelected: isSelected,
-                          onTap: () => setState(() => _selectedBodyType = item.id),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-
-                SizedBox(height: 10.h),
-
-                // Bottom Row: 2 items (Stocky, Plus Size)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 48.w),
-                    ..._bottomRowItems.map((item) {
-                      final bool isSelected = _selectedBodyType == item.id;
-                      return Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4.w),
-                          child: _BodyTypeCard(
-                            item: item,
-                            isSelected: isSelected,
-                            onTap: () =>
-                                setState(() => _selectedBodyType = item.id),
-                          ),
-                        ),
-                      );
-                    }),
-                    SizedBox(width: 48.w),
-                  ],
-                ),
-
-                const Spacer(),
-                SizedBox(height: 16.h),
-
-                // ── Continue Button ─────────────────────────────────────
-                AuthPrimaryButton(
-                  label: 'Continue',
-                  onPressed: () => context.go(Routes.defineStyle),
-                ),
-
-                SizedBox(height: 8.h),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Private Widgets
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _MeasurementField extends StatelessWidget {
   const _MeasurementField({
     required this.label,
     required this.controller,
+    this.enabled = true,
   });
 
   final String label;
   final TextEditingController controller;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -280,7 +349,9 @@ class _MeasurementField extends StatelessWidget {
           child: Center(
             child: TextField(
               controller: controller,
-              keyboardType: TextInputType.number,
+              enabled: enabled,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16.sp,
@@ -319,7 +390,8 @@ class _BodyTypeCard extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFBF4EB) : const Color(0xFFF9F7F4),
+          color:
+              isSelected ? const Color(0xFFFBF4EB) : const Color(0xFFF9F7F4),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: isSelected
@@ -342,7 +414,7 @@ class _BodyTypeCard extends StatelessWidget {
           children: [
             // Body Type Image
             SizedBox(
-              height: 72.h,
+              height: 68.h,
               child: Image.asset(
                 item.imagePath,
                 fit: BoxFit.contain,
@@ -351,9 +423,9 @@ class _BodyTypeCard extends StatelessWidget {
             SizedBox(height: 6.h),
             // Title
             Text(
-              item.title,
+              item.titleKey.tr(),
               style: TextStyle(
-                fontSize: 13.5.sp,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w700,
                 color: isSelected
                     ? const Color(0xFF2E2824)
@@ -363,8 +435,10 @@ class _BodyTypeCard extends StatelessWidget {
             SizedBox(height: 2.h),
             // Subtitle
             Text(
-              item.subtitle,
+              item.subtitleKey.tr(),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 9.5.sp,
                 fontWeight: FontWeight.w400,

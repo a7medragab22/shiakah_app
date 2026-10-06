@@ -1,29 +1,38 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:dio/dio.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/bloc/paginated_bloc/exports.dart';
+import '../../../../core/enum/status.dart';
+import '../../../../core/local_storage/local_storage.dart';
 import '../../../../core/router/router.dart';
+import '../../../../core/service_locator/service_locator.dart';
 import '../../../../core/theme/theme.dart';
+import '../../auth.dart';
+import '../../models/user_model.dart';
 import '../widgets/auth_buttons.dart';
 import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/step_progress_indicator.dart';
 
-/// Step 5 of 5 in the style-setup flow.
-/// Takes the user's name and verifies their location.
 class CompleteProfileScreen extends StatefulWidget {
-  const CompleteProfileScreen({super.key});
+  final bool autoFetchLocation;
+  const CompleteProfileScreen({
+    super.key,
+    this.autoFetchLocation = true,
+  });
 
   @override
   State<CompleteProfileScreen> createState() => _CompleteProfileScreenState();
 }
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
-  final TextEditingController _nameController =
-      TextEditingController(text: 'Amgad');
+  late final TextEditingController _nameController;
 
   bool _isLoadingLocation = false;
   bool _isLocationVerified = false;
@@ -32,14 +41,30 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Automatically detect and verify location on screen load!
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchLocation();
-    });
+    final cachedName =
+        HiveServiceImpl.instance.getCachedUserModel()?.name.trim();
+    _nameController = TextEditingController(
+      text: (cachedName != null &&
+              cachedName.isNotEmpty &&
+              cachedName.toLowerCase() != 'amgad')
+          ? cachedName
+          : '',
+    );
+    _nameController.addListener(_onNameChanged);
+    if (widget.autoFetchLocation) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchLocation();
+      });
+    }
+  }
+
+  void _onNameChanged() {
+    setState(() {});
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     super.dispose();
   }
@@ -54,17 +79,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     }
   }
 
-  /// Fast IP-based Geolocation (< 250ms), highly accurate for country and city
   Future<String?> _fetchIpLocation() async {
-    // 1. Try ipwho.is (fast HTTPS, returns Egyptian governorate & city)
     try {
-      final res = await Dio().get(
-        'https://ipwho.is/',
-        options: Options(
-          receiveTimeout: const Duration(seconds: 2),
-          sendTimeout: const Duration(seconds: 2),
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(milliseconds: 600),
+          receiveTimeout: const Duration(milliseconds: 600),
+          sendTimeout: const Duration(milliseconds: 600),
         ),
       );
+      final res = await dio.get('https://ipwho.is/');
       if (res.statusCode == 200 &&
           res.data != null &&
           res.data['success'] == true) {
@@ -78,15 +102,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       }
     } catch (_) {}
 
-    // 2. Try freeipapi.com (backup)
     try {
-      final res = await Dio().get(
-        'https://freeipapi.com/api/json',
-        options: Options(
-          receiveTimeout: const Duration(seconds: 2),
-          sendTimeout: const Duration(seconds: 2),
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(milliseconds: 600),
+          receiveTimeout: const Duration(milliseconds: 600),
+          sendTimeout: const Duration(milliseconds: 600),
         ),
       );
+      final res = await dio.get('https://freeipapi.com/api/json');
       if (res.statusCode == 200 && res.data != null) {
         final country = res.data['countryName']?.toString() ?? 'Egypt';
         final city = res.data['cityName']?.toString() ??
@@ -101,10 +125,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     return null;
   }
 
-  /// Detects location instantly without ever throwing TimeoutException:
-  /// 1. First tries cached GPS position (instant 0ms) if permission is already granted.
-  /// 2. If no cached GPS fix, instantly resolves city via HTTPS IP Geolocation (~200ms).
-  /// 3. Safely defaults to 'Egypt, Cairo' so the user is never blocked.
   Future<void> _fetchLocation() async {
     if (_isLoadingLocation) return;
 
@@ -112,22 +132,25 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       _isLoadingLocation = true;
     });
 
-    // 1. Check if GPS is already enabled & has cached coordinates
     try {
-      bool serviceEnabled =
-          await Geolocator.isLocationServiceEnabled().catchError((_) => false);
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled()
+          .timeout(const Duration(milliseconds: 500), onTimeout: () => false)
+          .catchError((_) => false);
       if (serviceEnabled) {
         LocationPermission permission = await Geolocator.checkPermission()
+            .timeout(const Duration(milliseconds: 500), onTimeout: () => LocationPermission.denied)
             .catchError((_) => LocationPermission.denied);
         if (permission == LocationPermission.denied) {
           permission = await Geolocator.requestPermission()
+              .timeout(const Duration(milliseconds: 500), onTimeout: () => LocationPermission.denied)
               .catchError((_) => LocationPermission.denied);
         }
 
         if (permission == LocationPermission.whileInUse ||
             permission == LocationPermission.always) {
-          final lastPos =
-              await Geolocator.getLastKnownPosition().catchError((_) => null);
+          final lastPos = await Geolocator.getLastKnownPosition()
+              .timeout(const Duration(milliseconds: 500), onTimeout: () => null)
+              .catchError((_) => null);
           if (lastPos != null) {
             try {
               final geocoding = Geocoding();
@@ -156,18 +179,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       }
     } catch (_) {}
 
-    // 2. Fast IP Geolocation (instant, works on emulator & real devices)
     final ipLoc = await _fetchIpLocation();
     if (ipLoc != null && mounted) {
       _applyLocation(ipLoc);
       return;
     }
 
-    // 3. Fallback default
     _applyLocation('Egypt, Cairo');
   }
 
-  /// Allows the user to manually pick or change their Egyptian city
   void _showCityPickerSheet() {
     final cities = [
       'Cairo',
@@ -215,7 +235,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Select Your City',
+                      'select_your_city'.tr(),
                       style: TextStyle(
                         fontSize: 17.sp,
                         fontWeight: FontWeight.w700,
@@ -269,189 +289,236 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFEFE5D8),
-      body: Column(
-        children: [
-          // ── Header with Step 5 Progress ──────────────────────────────
-          AuthHeader(
-            type: AuthHeaderType.image,
-            imagePath: 'assets/images/cloths.jpg',
-            title: 'Create Account',
-            fallbackRoute: Routes.defineStyle,
-            height: 130.h,
-            stepIndicator: const StepProgressIndicator(currentStep: 5),
-          ),
+    DI.executeSync();
+    return BlocProvider<OnboardingProfileBloc>(
+      create: (_) => getIt<OnboardingProfileBloc>(),
+      child: BlocConsumer<OnboardingProfileBloc, BaseState<OnboardingProfileResponseModel>>(
+        listener: (context, state) async {
+          if (state.status == Status.success) {
+            final name = _nameController.text.trim();
+            if (name.isNotEmpty) {
+              final cached = HiveServiceImpl.instance.getCachedUserModel();
+              if (cached != null) {
+                await HiveServiceImpl.instance.updateCachedUserModel(
+                  cached.copyWith(name: name),
+                );
+              } else {
+                await HiveServiceImpl.instance.cacheUserModel(
+                  UserModel(id: 1, name: name, email: '', phone: ''),
+                );
+              }
+            }
+            try {
+              final location = _locationText.isNotEmpty ? _locationText : 'Egypt, Cairo';
+              await HiveServiceImpl.put('settings_box', 'user_location', location);
+            } catch (_) {}
+            if (context.mounted) {
+              context.go(Routes.home);
+            }
+          } else if (state.status == Status.failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.errorMessage ?? 'Something went wrong',
+                ),
+                backgroundColor: Colors.red.shade700,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          final bool isLoading = state.status == Status.loading;
+          final bool isNameValid = _nameController.text.trim().isNotEmpty;
+          final bool isEnabled = _isLocationVerified && isNameValid && !isLoading;
 
-          // ── White Form Card ──────────────────────────────────────────
-          AuthFormCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          return Scaffold(
+            backgroundColor: const Color(0xFFEFE5D8),
+            body: Column(
               children: [
-                // Logo + Title + Subtitle
-                Center(
+                // ── Header with Step 5 Progress ──────────────────────────────
+                AuthHeader(
+                  type: AuthHeaderType.image,
+                  imagePath: 'assets/images/cloths.jpg',
+                  title: 'create_account_title'.tr(),
+                  fallbackRoute: Routes.defineStyle,
+                  height: 130.h,
+                  stepIndicator: const StepProgressIndicator(currentStep: 5),
+                ),
+
+                // ── White Form Card ──────────────────────────────────────────
+                AuthFormCard(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.asset(
-                        'assets/images/logo.png',
-                        height: 64.h,
-                        fit: BoxFit.contain,
+                      // Logo + Title + Subtitle
+                      Center(
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/logo.png',
+                              height: 64.h,
+                              fit: BoxFit.contain,
+                            ),
+                            SizedBox(height: 14.h),
+                            Text(
+                              'complete_your_profile'.tr(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              child: Text(
+                                'complete_profile_subtitle'.tr(),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13.5.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xFF8E8883),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      SizedBox(height: 14.h),
+
+                      SizedBox(height: 24.h),
+
+                      // ── Your Name Field ─────────────────────────────────────
                       Text(
-                        'Complete Your Profile',
-                        textAlign: TextAlign.center,
+                        'your_name'.tr(),
                         style: TextStyle(
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
+
                       SizedBox(height: 8.h),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w),
-                        child: Text(
-                          'Personalize your experience before you get started.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 13.5.sp,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF8E8883),
-                            height: 1.4,
+
+                      Container(
+                        height: 48.h,
+                        padding: EdgeInsets.symmetric(horizontal: 14.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: const Color(0xFFE2D6C6),
+                            width: 1.3,
+                          ),
+                        ),
+                        child: Center(
+                          child: TextField(
+                            controller: _nameController,
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              isDense: true,
+                              hintText: 'enter_your_name'.tr(),
+                              hintStyle: const TextStyle(
+                                color: Color(0xFFA09B95),
+                                fontWeight: FontWeight.w400,
+                              ),
+                              contentPadding: EdgeInsets.zero,
+                            ),
                           ),
                         ),
                       ),
+
+                      SizedBox(height: 20.h),
+
+                      // ── Location Verification Card ──────────────────────────
+                      GestureDetector(
+                        onTap: (_isLoadingLocation || isLoading)
+                            ? null
+                            : (_isLocationVerified
+                                ? _showCityPickerSheet
+                                : _fetchLocation),
+                        behavior: HitTestBehavior.opaque,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 22.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _isLocationVerified
+                                ? Colors.white
+                                : const Color(0xFFFDFBF7),
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(
+                              color: _isLocationVerified
+                                  ? const Color(0xFFEAE3D9)
+                                  : const Color(0xFFDECFC0),
+                              width: _isLocationVerified ? 1.3 : 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _isLocationVerified
+                                    ? Colors.black.withValues(alpha: 0.03)
+                                    : const Color(0xFFB5956A).withValues(alpha: 0.06),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: _isLoadingLocation
+                              ? _buildLoadingLocation()
+                              : (_isLocationVerified
+                                  ? _buildVerifiedLocation()
+                                  : _buildUnverifiedLocation()),
+                        ),
+                      ),
+
+                      SizedBox(height: 28.h),
+
+                      // ── Continue Button (Enabled ONLY when location and name are valid) ──
+                      AuthPrimaryButton(
+                        label: 'continue_btn'.tr(),
+                        isEnabled: isEnabled,
+                        isLoading: isLoading,
+                        onPressed: isEnabled
+                            ? () {
+                                final name = _nameController.text.trim();
+                                final location = _locationText.isNotEmpty
+                                    ? _locationText
+                                    : 'Egypt, Cairo';
+                                context.read<OnboardingProfileBloc>().add(
+                                      OnboardingProfileSubmitted(
+                                        name: name,
+                                        location: location,
+                                      ),
+                                    );
+                              }
+                            : null,
+                      ),
+
+                      SizedBox(height: 8.h),
                     ],
                   ),
                 ),
-
-                SizedBox(height: 24.h),
-
-                // ── Your Name Field ─────────────────────────────────────
-                Text(
-                  'Your Name',
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                SizedBox(height: 8.h),
-
-                Container(
-                  height: 48.h,
-                  padding: EdgeInsets.symmetric(horizontal: 14.w),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: const Color(0xFFE2D6C6),
-                      width: 1.3,
-                    ),
-                  ),
-                  child: Center(
-                    child: TextField(
-                      controller: _nameController,
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        isDense: true,
-                        hintText: 'Enter your name',
-                        hintStyle: TextStyle(
-                          color: Color(0xFFA09B95),
-                          fontWeight: FontWeight.w400,
-                        ),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 20.h),
-
-                // ── Location Verification Card ──────────────────────────
-                GestureDetector(
-                  onTap: _isLoadingLocation
-                      ? null
-                      : (_isLocationVerified
-                          ? _showCityPickerSheet
-                          : _fetchLocation),
-                  behavior: HitTestBehavior.opaque,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20.w,
-                      vertical: 22.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _isLocationVerified
-                          ? Colors.white
-                          : const Color(0xFFFDFBF7),
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(
-                        color: _isLocationVerified
-                            ? const Color(0xFFEAE3D9)
-                            : const Color(0xFFDECFC0),
-                        width: _isLocationVerified ? 1.3 : 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _isLocationVerified
-                              ? Colors.black.withValues(alpha: 0.03)
-                              : const Color(0xFFB5956A).withValues(alpha: 0.06),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: AnimatedCrossFade(
-                      duration: const Duration(milliseconds: 260),
-                      crossFadeState: _isLoadingLocation
-                          ? CrossFadeState.showFirst
-                          : _isLocationVerified
-                              ? CrossFadeState.showFirst
-                              : CrossFadeState.showSecond,
-                      firstChild: _isLoadingLocation
-                          ? _buildLoadingLocation()
-                          : _buildVerifiedLocation(),
-                      secondChild: _buildUnverifiedLocation(),
-                    ),
-                  ),
-                ),
-
-                const Spacer(),
-                SizedBox(height: 16.h),
-
-                // ── Continue Button (Enabled ONLY when location is verified) ──
-                AuthPrimaryButton(
-                  label: 'Continue',
-                  isEnabled: _isLocationVerified,
-                  onPressed: _isLocationVerified
-                      ? () => context.go(Routes.home)
-                      : null,
-                ),
-
-                SizedBox(height: 8.h),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  /// State: Location is verified (as shown in the screenshot)
   Widget _buildVerifiedLocation() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Custom Green Location Pin with Checkmark
         SizedBox(
           width: 56.w,
           height: 56.w,
@@ -462,9 +529,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
         SizedBox(height: 12.h),
 
-        // Title
         Text(
-          'Location Verified',
+          'location_verified'.tr(),
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.w800,
@@ -474,11 +540,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
         SizedBox(height: 8.h),
 
-        // Subtitle
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.w),
           child: Text(
-            'Weather-based outfit recommendations are now personalized for your location.',
+            'location_verified_subtitle'.tr(),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13.sp,
@@ -491,7 +556,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
         SizedBox(height: 14.h),
 
-        // Location tag (Gold pin + Country, City + Change button)
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -502,12 +566,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               color: const Color(0xFFB5956A),
             ),
             SizedBox(width: 5.w),
-            Text(
-              _locationText,
-              style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFFB5956A),
+            Flexible(
+              child: Text(
+                _locationText,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFFB5956A),
+                ),
               ),
             ),
             SizedBox(width: 8.w),
@@ -518,7 +586,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
-                'Change',
+                'change'.tr(),
                 style: TextStyle(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
@@ -532,7 +600,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  /// State: Detecting Location (loading animation)
   Widget _buildLoadingLocation() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -547,7 +614,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
         SizedBox(height: 14.h),
         Text(
-          'Detecting Location...',
+          'detecting_location'.tr(),
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w700,
@@ -556,7 +623,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
         SizedBox(height: 6.h),
         Text(
-          'Please wait while we determine your city',
+          'detecting_location_subtitle'.tr(),
           style: TextStyle(
             fontSize: 12.5.sp,
             color: const Color(0xFF8E8883),
@@ -566,12 +633,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  /// State: Location not yet verified (Initial state)
   Widget _buildUnverifiedLocation() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Location Pin Icon in circular badge
         Container(
           width: 56.w,
           height: 56.w,
@@ -587,7 +652,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
         SizedBox(height: 12.h),
         Text(
-          'Verify Your Location',
+          'verify_your_location'.tr(),
           style: TextStyle(
             fontSize: 17.5.sp,
             fontWeight: FontWeight.w700,
@@ -598,7 +663,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 10.w),
           child: Text(
-            'Tap here to allow weather-based outfit recommendations.',
+            'verify_location_subtitle'.tr(),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13.sp,
@@ -608,7 +673,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           ),
         ),
         SizedBox(height: 14.h),
-        // Action pill indicator
         Container(
           padding: EdgeInsets.symmetric(
             horizontal: 16.w,
@@ -631,12 +695,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 color: const Color(0xFFB5956A),
               ),
               SizedBox(width: 6.w),
-              Text(
-                'Tap to Detect Location',
-                style: TextStyle(
-                  fontSize: 12.5.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFFB5956A),
+              Flexible(
+                child: Text(
+                  'tap_to_detect_location'.tr(),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFB5956A),
+                  ),
                 ),
               ),
             ],
@@ -647,17 +715,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Custom Painter for the Green Location Pin with Checkmark Icon
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _LocationVerifiedIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final double w = size.width;
     final double h = size.height;
 
-    // Green stroke paint
     final Paint pinPaint = Paint()
       ..color = const Color(0xFF388E3C)
       ..style = PaintingStyle.stroke
@@ -672,13 +735,11 @@ class _LocationVerifiedIconPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    // Draw Location Pin Path
     final Path pinPath = Path();
     final double centerX = w * 0.46;
     final double headRadius = w * 0.26;
     final double headCenterY = h * 0.34;
 
-    // Top circular head and tapered tail
     pinPath.addArc(
       Rect.fromCircle(
         center: Offset(centerX, headCenterY),
@@ -688,7 +749,6 @@ class _LocationVerifiedIconPainter extends CustomPainter {
       1.85 * 3.14159,
     );
 
-    // Left curve down to bottom tip
     pinPath.moveTo(
         centerX - headRadius * 0.88, headCenterY + headRadius * 0.45);
     pinPath.cubicTo(
@@ -700,7 +760,6 @@ class _LocationVerifiedIconPainter extends CustomPainter {
       h * 0.78,
     );
 
-    // Right curve up towards head
     pinPath.cubicTo(
       centerX + headRadius * 0.3,
       headCenterY + headRadius * 1.8,
@@ -712,7 +771,6 @@ class _LocationVerifiedIconPainter extends CustomPainter {
 
     canvas.drawPath(pinPath, pinPaint);
 
-    // Draw inner circle dot inside the pin
     final Paint dotPaint = Paint()
       ..color = const Color(0xFF388E3C)
       ..style = PaintingStyle.stroke
@@ -724,7 +782,6 @@ class _LocationVerifiedIconPainter extends CustomPainter {
       dotPaint,
     );
 
-    // Draw checkmark badge on the bottom right
     final Path checkPath = Path();
     final double checkStartX = w * 0.52;
     final double checkStartY = h * 0.74;
