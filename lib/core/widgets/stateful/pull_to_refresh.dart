@@ -103,15 +103,11 @@ class _PullToRefreshState extends State<PullToRefresh> {
         double overscroll = 0;
         if(Platform.isIOS){
           if (notification is ScrollUpdateNotification) {
-            final maxScroll = notification.metrics.maxScrollExtent;
             final minScroll = notification.metrics.minScrollExtent;
             final currentScroll = notification.metrics.pixels;
-            overscroll = currentScroll-minScroll;
-            print("overscroll =========> $overscroll");
+            overscroll = currentScroll - minScroll;
             if ((currentScroll - minScroll) > -100) {
               isOverScroll = true;
-            } else if (currentScroll > maxScroll) {
-              print("Bounced at bottom (iOS-style overscroll)");
             }
           }
           // return true;

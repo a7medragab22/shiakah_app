@@ -54,6 +54,21 @@ class SharedServiceLocator {
     );
     getIt.registerLazySingleton<ApiConsumer>(() => BaseApiConsumer(dio: getIt<Dio>()));
     getIt.registerLazySingleton<GenericDataSource>(() => GenericDataSource( getIt<ApiConsumer>()));
+    getIt.registerLazySingleton<WardrobeRemoteDataSource>(
+      () => WardrobeRemoteDataSourceImpl(getIt<GenericDataSource>()),
+    );
+    getIt.registerFactory<AddToClosetCubit>(
+      () => AddToClosetCubit(getIt<WardrobeRemoteDataSource>()),
+    );
+    getIt.registerFactory<MyClosetCubit>(
+      () => MyClosetCubit(getIt<WardrobeRemoteDataSource>()),
+    );
+    getIt.registerLazySingleton<OutfitRemoteDataSource>(
+      () => OutfitRemoteDataSourceImpl(getIt<GenericDataSource>()),
+    );
+    getIt.registerFactory<MyLooksCubit>(
+      () => MyLooksCubit(getIt<OutfitRemoteDataSource>()),
+    );
     getIt.registerLazySingleton<SyncManager>(() => SyncManager());
     getIt.registerLazySingleton<ConnectivityService>(() => ConnectivityService.instance);
 

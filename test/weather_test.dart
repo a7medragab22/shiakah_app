@@ -86,7 +86,6 @@ void main() {
   test('WeatherService fetches auto-detected location cleanly', () async {
     final service = WeatherService();
     final weather = await service.fetchWeather();
-    print('Auto-detected weather location: ${weather.cityName}, ${weather.countryName}');
     expect(weather.cityName.isNotEmpty, true);
     expect(weather.countryName.isNotEmpty, true);
   });

@@ -14,7 +14,6 @@ import '../../../../core/router/router.dart';
 import '../../../../core/service_locator/service_locator.dart';
 import '../../../../core/theme/theme.dart';
 import '../../auth.dart';
-import '../../models/user_model.dart';
 import '../widgets/auth_buttons.dart';
 import '../widgets/auth_form_card.dart';
 import '../widgets/auth_header.dart';

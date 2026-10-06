@@ -1,17 +1,31 @@
+import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/service_locator/scanner/image_preprocessor.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../main.dart';
 import '../screens/photo_analysis_preview_screen.dart';
+import 'camera_guidelines_bottom_sheet.dart';
 
 /// Modal bottom sheet presented when tapping "Add Clothing" on the Home Screen.
 class CameraAccessBottomSheet extends StatelessWidget {
-  const CameraAccessBottomSheet({super.key});
+  final void Function(File image)? onImagePicked;
+  final bool autoScan;
 
-  static Future<void> show(BuildContext context) {
+  const CameraAccessBottomSheet({
+    super.key,
+    this.onImagePicked,
+    this.autoScan = true,
+  });
+
+  static Future<void> show(
+    BuildContext context, {
+    void Function(File image)? onImagePicked,
+    bool autoScan = true,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -19,53 +33,43 @@ class CameraAccessBottomSheet extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-      builder: (_) => const CameraAccessBottomSheet(),
+      builder: (_) => CameraAccessBottomSheet(
+        onImagePicked: onImagePicked,
+        autoScan: autoScan,
+      ),
     );
   }
 
-  static Future<void> _pickAndOpenPreview(
-    BuildContext context,
-    ImageSource source,
-  ) async {
+  static Future<void> _pickGalleryAndOpenPreview(
+    BuildContext context, {
+    void Function(File image)? onImagePicked,
+    bool autoScan = true,
+  }) async {
     Navigator.pop(context); // Close the bottom sheet safely
 
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? photo = await picker.pickImage(
-        source: source,
+        source: ImageSource.gallery,
         imageQuality: 95,
       );
 
       if (photo != null && photo.path.isNotEmpty) {
+        // Crop gallery image to 1:1 square
+        final squareFile =
+            await ImagePreprocessor.cropToSquareFile(File(photo.path));
+        onImagePicked?.call(squareFile);
         navigatorKey.currentState?.push(
           MaterialPageRoute(
             builder: (_) => PhotoAnalysisPreviewScreen(
-              imagePath: photo.path,
+              imagePath: squareFile.path,
+              autoScan: autoScan,
             ),
           ),
         );
       }
     } catch (e) {
-      debugPrint('Error picking image: $e');
-      if (source == ImageSource.camera) {
-        // Fallback to gallery on emulator if camera is unavailable
-        try {
-          final ImagePicker picker = ImagePicker();
-          final XFile? photo = await picker.pickImage(
-            source: ImageSource.gallery,
-            imageQuality: 95,
-          );
-          if (photo != null && photo.path.isNotEmpty) {
-            navigatorKey.currentState?.push(
-              MaterialPageRoute(
-                builder: (_) => PhotoAnalysisPreviewScreen(
-                  imagePath: photo.path,
-                ),
-              ),
-            );
-          }
-        } catch (_) {}
-      }
+      debugPrint('Error picking image from gallery: $e');
     }
   }
 
@@ -134,23 +138,33 @@ class CameraAccessBottomSheet extends StatelessWidget {
             ),
             SizedBox(height: 22.h),
 
-            // ── Option 1: Take Photo via Camera ─────────────────────────────
+            // ── Option 1: Take Photo via Camera (Opens Guidelines First) ───
             _buildSourceOptionTile(
               context: context,
               icon: Icons.camera_alt_rounded,
               title: 'camera'.tr(),
               subtitle: 'camera_sub'.tr(),
-              onTap: () => _pickAndOpenPreview(context, ImageSource.camera),
+              onTap: () {
+                Navigator.pop(context);
+                CameraGuidelinesBottomSheet.show(
+                  context,
+                  onImagePicked: onImagePicked,
+                );
+              },
             ),
             SizedBox(height: 12.h),
 
-            // ── Option 2: Choose from Gallery ────────────────────────────────
+            // ── Option 2: Choose from Gallery (Crops to 1:1) ─────────────────
             _buildSourceOptionTile(
               context: context,
               icon: Icons.photo_library_rounded,
               title: 'choose_from_gallery'.tr(),
               subtitle: 'gallery_sub'.tr(),
-              onTap: () => _pickAndOpenPreview(context, ImageSource.gallery),
+              onTap: () => _pickGalleryAndOpenPreview(
+                context,
+                onImagePicked: onImagePicked,
+                autoScan: autoScan,
+              ),
             ),
             SizedBox(height: 16.h),
 

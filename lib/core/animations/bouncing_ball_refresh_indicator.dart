@@ -14,7 +14,7 @@ class BouncingBallRefreshIndicator extends StatefulWidget {
   });
 
   @override
-  _BouncingBallRefreshIndicatorState createState() =>
+  State<BouncingBallRefreshIndicator> createState() =>
       _BouncingBallRefreshIndicatorState();
 }
 
