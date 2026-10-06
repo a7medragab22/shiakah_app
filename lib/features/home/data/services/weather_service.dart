@@ -55,13 +55,17 @@ class WeatherService {
           }
           if (permission == LocationPermission.whileInUse ||
               permission == LocationPermission.always) {
-            Position? pos = await Geolocator.getLastKnownPosition()
-                .timeout(const Duration(seconds: 1), onTimeout: () => null)
-                .catchError((_) => null);
-            pos ??= await Geolocator.getCurrentPosition(
-              desiredAccuracy: LocationAccuracy.low,
-              timeLimit: const Duration(seconds: 2),
-            ).catchError((_) => null);
+            Position? pos = await Geolocator.getLastKnownPosition();
+            if (pos == null) {
+              try {
+                pos = await Geolocator.getCurrentPosition(
+                  locationSettings: const LocationSettings(
+                    accuracy: LocationAccuracy.low,
+                    timeLimit: Duration(seconds: 2),
+                  ),
+                );
+              } catch (_) {}
+            }
             if (pos != null) {
               query = '${pos.latitude},${pos.longitude}';
             }

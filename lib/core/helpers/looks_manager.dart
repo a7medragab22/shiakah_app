@@ -26,4 +26,18 @@ class LooksManager extends ValueNotifier<List<String>> {
   bool contains(String path) {
     return value.contains(path);
   }
+
+  void syncRemoteItems(List<String> remotePaths) {
+    final combined = <String>[...remotePaths];
+    for (final item in value) {
+      if (!combined.contains(item)) {
+        combined.add(item);
+      }
+    }
+    value = combined;
+  }
+
+  void setItems(List<String> items) {
+    value = items;
+  }
 }

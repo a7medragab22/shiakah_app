@@ -157,10 +157,7 @@ void main() {
         (response) => token = response.data?.accessToken,
       );
 
-      if (token == null) {
-        // Fallback test token
-        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
-      }
+      token ??= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
 
       dio.options.headers['Authorization'] = 'Bearer $token';
 

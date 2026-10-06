@@ -1,3 +1,7 @@
 # Project exclude paths
 /.dart_tool/
 /build/
+
+# TensorFlow Lite large models
+*.tflite
+/assets/models/*.tflite

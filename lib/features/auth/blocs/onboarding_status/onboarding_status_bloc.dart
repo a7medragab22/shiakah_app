@@ -2,9 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/bloc/paginated_bloc/exports.dart';
 import '../../../../core/enum/status.dart';
 import '../../../../core/local_storage/local_storage.dart';
-import '../../models/user_model.dart';
 import '../../auth.dart';
-import 'onboarding_status_event.dart';
 
 class OnboardingStatusBloc
     extends Bloc<OnboardingStatusEvent, BaseState<OnboardingStatusResponseModel>> {

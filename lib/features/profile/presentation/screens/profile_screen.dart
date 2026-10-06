@@ -1,10 +1,15 @@
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/bloc/paginated_bloc/exports.dart';
+import '../../../../core/enum/status.dart';
 import '../../../../core/helpers/helpers.dart';
+import '../../../../core/http/http.dart';
 import '../../../../core/localization/app_localization_helper.dart';
+import '../../../../core/service_locator/service_locator.dart';
 import '../../../../core/theme/theme.dart';
 import 'item_details_screen.dart';
 
@@ -20,45 +25,135 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
-      body: AnimatedBuilder(
-        animation: Listenable.merge([
-          ClosetManager.instance,
-          LooksManager.instance,
-        ]),
-        builder: (context, _) {
-          return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                // ── 1. Hero Header Section with Portrait & Floating Name Badge ──
-                _buildHeroHeader(context),
-                SizedBox(height: 16.h),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<MyClosetCubit>(
+          create: (_) => getIt<MyClosetCubit>()..fetchMyCloset(),
+        ),
+        BlocProvider<MyLooksCubit>(
+          create: (_) => getIt<MyLooksCubit>()..fetchMyLooks(),
+        ),
+      ],
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<MyClosetCubit, BaseState<MyClosetResponseModel>>(
+            listener: (context, state) {
+              if (state.status == Status.success &&
+                  state.data?.data?.items != null) {
+                final remoteUrls = state.data!.data!.items
+                    .map((item) => item.fullImageUrl)
+                    .where((url) => url.isNotEmpty)
+                    .toList();
+                ClosetManager.instance.syncRemoteItems(remoteUrls);
+              }
+            },
+          ),
+          BlocListener<MyLooksCubit, BaseState<MyLooksResponseModel>>(
+            listener: (context, state) {
+              if (state.status == Status.success && state.data?.data != null) {
+                final remoteUrls = state.data!.data
+                    .map((look) => look.fullImageUrl)
+                    .where((url) => url.isNotEmpty)
+                    .toList();
+                LooksManager.instance.syncRemoteItems(remoteUrls);
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<MyClosetCubit, BaseState<MyClosetResponseModel>>(
+          builder: (context, closetState) {
+            return BlocBuilder<MyLooksCubit, BaseState<MyLooksResponseModel>>(
+              builder: (context, looksState) {
+                final isClosetLoading = closetState.status == Status.loading &&
+                    ClosetManager.instance.value.isEmpty;
+                final isClosetError = closetState.status == Status.failure &&
+                    ClosetManager.instance.value.isEmpty;
 
-                // Padding wrapper for the remaining content
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 18.w),
-                  child: Column(
-                    children: [
-                      // ── 2. Stats Row (My Closet & My Looks Counts) ──────────────
-                      _buildStatsRow(),
-                      SizedBox(height: 16.h),
+                final isLooksLoading = looksState.status == Status.loading &&
+                    LooksManager.instance.value.isEmpty;
+                final isLooksError = looksState.status == Status.failure &&
+                    LooksManager.instance.value.isEmpty;
 
-                      // ── 3. Segmented Tab Switcher (My Closet / My Looks) ────────
-                      _buildSegmentedTabSwitcher(),
-                      SizedBox(height: 16.h),
+                return Scaffold(
+                  backgroundColor: const Color(0xFFFAFAFA),
+                  body: RefreshIndicator(
+                    color: AppColors.primary,
+                    onRefresh: () async {
+                      if (_selectedTabIndex == 0) {
+                        await context.read<MyClosetCubit>().fetchMyCloset();
+                      } else {
+                        await context.read<MyLooksCubit>().fetchMyLooks();
+                      }
+                    },
+                    child: AnimatedBuilder(
+                      animation: Listenable.merge([
+                        ClosetManager.instance,
+                        LooksManager.instance,
+                      ]),
+                      builder: (context, _) {
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
+                          ),
+                          child: Column(
+                            children: [
+                              // ── 1. Hero Header Section with Portrait & Floating Name Badge ──
+                              _buildHeroHeader(context),
+                              SizedBox(height: 16.h),
 
-                      // ── 4. Outfit / Item Grid View ──────────────────────────────
-                      _buildGridContent(),
-                      SizedBox(height: 24.h),
-                    ],
+                              // Padding wrapper for the remaining content
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 18.w),
+                                child: Column(
+                                  children: [
+                                    // ── 2. Stats Row (My Closet & My Looks Counts) ──────────────
+                                    _buildStatsRow(context),
+                                    SizedBox(height: 16.h),
+
+                                    // ── 3. Segmented Tab Switcher (My Closet / My Looks) ────────
+                                    _buildSegmentedTabSwitcher(context),
+                                    SizedBox(height: 16.h),
+
+                                    // ── 4. Outfit / Item Grid View ──────────────────────────────
+                                    if (_selectedTabIndex == 0 && isClosetLoading)
+                                      _buildLoadingState()
+                                    else if (_selectedTabIndex == 0 && isClosetError)
+                                      _buildErrorState(
+                                        context,
+                                        closetState.errorMessage ??
+                                            'error_occurred'.tr(),
+                                        onRetry: () => context
+                                            .read<MyClosetCubit>()
+                                            .fetchMyCloset(),
+                                      )
+                                    else if (_selectedTabIndex == 1 && isLooksLoading)
+                                      _buildLoadingState()
+                                    else if (_selectedTabIndex == 1 && isLooksError)
+                                      _buildErrorState(
+                                        context,
+                                        looksState.errorMessage ??
+                                            'error_occurred'.tr(),
+                                        onRetry: () => context
+                                            .read<MyLooksCubit>()
+                                            .fetchMyLooks(),
+                                      )
+                                    else
+                                      _buildGridContent(),
+                                    SizedBox(height: 24.h),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -231,7 +326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ───────────────────────────────────────────────────────────────────────────
   // Stats Row (My Closet & My Looks)
   // ───────────────────────────────────────────────────────────────────────────
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(BuildContext context) {
     final closetCount = ClosetManager.instance.value.length;
     final looksCount = LooksManager.instance.value.length;
 
@@ -242,7 +337,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Stat 1: My Closet
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _selectedTabIndex = 0),
+              onTap: () {
+                setState(() => _selectedTabIndex = 0);
+                if (ClosetManager.instance.value.isEmpty) {
+                  context.read<MyClosetCubit>().fetchMyCloset();
+                }
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -294,7 +394,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Stat 2: My Looks
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _selectedTabIndex = 1),
+              onTap: () {
+                setState(() => _selectedTabIndex = 1);
+                if (LooksManager.instance.value.isEmpty) {
+                  context.read<MyLooksCubit>().fetchMyLooks();
+                }
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -349,7 +454,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ───────────────────────────────────────────────────────────────────────────
   // Segmented Tab Switcher (My Closet / My Looks)
   // ───────────────────────────────────────────────────────────────────────────
-  Widget _buildSegmentedTabSwitcher() {
+  Widget _buildSegmentedTabSwitcher(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(4.w),
@@ -366,7 +471,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Tab 1: My Closet
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _selectedTabIndex = 0),
+              onTap: () {
+                setState(() => _selectedTabIndex = 0);
+                if (ClosetManager.instance.value.isEmpty) {
+                  context.read<MyClosetCubit>().fetchMyCloset();
+                }
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -396,7 +506,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Tab 2: My Looks
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _selectedTabIndex = 1),
+              onTap: () {
+                setState(() => _selectedTabIndex = 1);
+                if (LooksManager.instance.value.isEmpty) {
+                  context.read<MyLooksCubit>().fetchMyLooks();
+                }
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -505,6 +620,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
               fontSize: 13.sp,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF8E8883),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 50.h),
+      child: const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFFC8A97E),
+          strokeWidth: 2.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String message, {VoidCallback? onRetry}) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 36.h, horizontal: 20.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: const Color(0xFFEAE3D9),
+          width: 1.0,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.cloud_off_rounded,
+            size: 40.sp,
+            color: const Color(0xFFD32F2F),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: 14.h),
+          ElevatedButton.icon(
+            onPressed: onRetry ??
+                () => context.read<MyClosetCubit>().fetchMyCloset(),
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+            label: Text(
+              'retry'.tr(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
             ),
           ),
         ],
@@ -688,6 +870,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildItemImage(String path) {
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return Image.network(
+        path,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: const Color(0xFFF5EFE6),
+            child: const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Color(0xFFC8A97E),
+                  strokeWidth: 2.0,
+                ),
+              ),
+            ),
+          );
+        },
+        errorBuilder: (_, __, ___) => _buildFallbackCardImage(),
+      );
+    }
+
     if (path.startsWith('assets/')) {
       return Image.asset(
         path,
@@ -697,20 +906,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         alignment: Alignment.topCenter,
         errorBuilder: (_, __, ___) => _buildFallbackCardImage(),
       );
-    } else {
-      final file = File(path);
-      if (file.existsSync()) {
-        return Image.file(
-          file,
-          width: double.infinity,
-          height: double.infinity,
-          fit: BoxFit.cover,
-          alignment: Alignment.topCenter,
-          errorBuilder: (_, __, ___) => _buildFallbackCardImage(),
-        );
-      }
-      return Image.asset(
-        path,
+    }
+
+    final file = File(path);
+    if (file.existsSync()) {
+      return Image.file(
+        file,
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
@@ -718,6 +919,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
         errorBuilder: (_, __, ___) => _buildFallbackCardImage(),
       );
     }
+
+    // Handle relative server paths (e.g., Images/WardrobeItems/...)
+    if (path.contains('Images/') || path.contains('WardrobeItems/')) {
+      final cleanBase = Endpoints.baseUrl.endsWith('/')
+          ? Endpoints.baseUrl.substring(0, Endpoints.baseUrl.length - 1)
+          : Endpoints.baseUrl;
+      final cleanPath = path.startsWith('/') ? path : '/$path';
+      return Image.network(
+        '$cleanBase$cleanPath',
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: const Color(0xFFF5EFE6),
+            child: const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Color(0xFFC8A97E),
+                  strokeWidth: 2.0,
+                ),
+              ),
+            ),
+          );
+        },
+        errorBuilder: (_, __, ___) => _buildFallbackCardImage(),
+      );
+    }
+
+    return Image.asset(
+      path,
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+      alignment: Alignment.topCenter,
+      errorBuilder: (_, __, ___) => _buildFallbackCardImage(),
+    );
   }
 
   Widget _buildFallbackCardImage() {
