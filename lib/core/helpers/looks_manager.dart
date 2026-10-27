@@ -39,4 +39,8 @@ class LooksManager extends ValueNotifier<List<String>> {
   void setItems(List<String> items) {
     value = items.toSet().toList();
   }
+
+  void clear() {
+    value = [];
+  }
 }

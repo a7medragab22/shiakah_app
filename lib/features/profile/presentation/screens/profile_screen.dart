@@ -3,14 +3,17 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/bloc/paginated_bloc/exports.dart';
 import '../../../../core/enum/status.dart';
 import '../../../../core/helpers/helpers.dart';
 import '../../../../core/http/http.dart';
 import '../../../../core/localization/app_localization_helper.dart';
+import '../../../../core/router/router.dart';
 import '../../../../core/service_locator/service_locator.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../auth/auth.dart';
 import 'item_details_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -33,6 +36,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         BlocProvider<MyLooksCubit>(
           create: (_) => getIt<MyLooksCubit>()..fetchMyLooks(),
         ),
+        BlocProvider<LogoutBloc>(
+          create: (_) => getIt<LogoutBloc>(),
+        ),
       ],
       child: MultiBlocListener(
         listeners: [
@@ -53,6 +59,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     .where((url) => url.isNotEmpty)
                     .toList();
                 LooksManager.instance.syncRemoteItems(remoteUrls);
+              }
+            },
+          ),
+          BlocListener<LogoutBloc, BaseState<void>>(
+            listener: (context, state) {
+              if (state.status == Status.success ||
+                  state.status == Status.failure) {
+                // If there are screens on top of root, pop until the first screen
+                if (Navigator.of(context, rootNavigator: true).canPop()) {
+                  Navigator.of(context, rootNavigator: true)
+                      .popUntil((route) => route.isFirst);
+                }
+                context.go(Routes.login);
               }
             },
           ),
@@ -156,6 +175,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // ───────────────────────────────────────────────────────────────────────────
+  // Logout Confirmation Dialog
+  // ───────────────────────────────────────────────────────────────────────────
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18.r),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFEBEE),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.logout_rounded,
+                  color: const Color(0xFFD32F2F),
+                  size: 20.sp,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                'logout_confirm_title'.tr(),
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'logout_confirm_message'.tr(),
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF6E6862),
+              height: 1.4,
+            ),
+          ),
+          actionsPadding:
+              EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'cancel'.tr(),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF8E8883),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                context.read<LogoutBloc>().add(const LogoutSubmitted());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD32F2F),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              ),
+              child: Text(
+                'logout'.tr(),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
   // Hero Header Widget
   // ───────────────────────────────────────────────────────────────────────────
   Widget _buildHeroHeader(BuildContext context) {
@@ -215,45 +321,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
 
-                // Right Icons: User Profile & Menu
-                Row(
-                  children: [
-                    Container(
-                      width: 40.w,
-                      height: 40.w,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: Icon(
-                          Icons.person_outline_rounded,
-                          size: 22.sp,
-                          color: AppColors.textPrimary,
-                        ),
-                        padding: EdgeInsets.zero,
-                      ),
+                // Right Side: Logout Action Button (Replaces profile and menu icons)
+                Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    onPressed: () => _showLogoutDialog(context),
+                    tooltip: 'logout'.tr(),
+                    icon: Icon(
+                      Icons.logout_rounded,
+                      size: 20.sp,
+                      color: const Color(0xFFD32F2F),
                     ),
-                    SizedBox(width: 8.w),
-                    Container(
-                      width: 40.w,
-                      height: 40.w,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: Icon(
-                          Icons.menu_rounded,
-                          size: 22.sp,
-                          color: AppColors.textPrimary,
-                        ),
-                        padding: EdgeInsets.zero,
-                      ),
-                    ),
-                  ],
+                    padding: EdgeInsets.zero,
+                  ),
                 ),
               ],
             ),
