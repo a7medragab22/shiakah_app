@@ -27,5 +27,5 @@ abstract interface class Endpoints {
   static const String removeWardrobeItemBase = "/api/Wardrobe/remove-item";
   static String removeWardrobeItem(dynamic itemId) => "/api/Wardrobe/remove-item/$itemId";
   static const String myLooks = "/api/OutfitResult/my-looks";
-  static const String logout = "/logout";
+  static const String logout = "/api/Auth/logout";
 }
