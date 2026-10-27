@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/theme.dart';
+import '../../../profile/presentation/screens/item_details_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
+import 'chatbot_coming_soon_screen.dart';
 import 'home_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -23,8 +25,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     final screens = [
       const HomeScreen(),
-      _PlaceholderTabScreen(title: 'nav_wardrobe'.tr()),
-      _PlaceholderTabScreen(title: 'nav_outfits'.tr()),
+      const ItemDetailsScreen(),
+      const ChatBotComingSoonScreen(),
       const ProfileScreen(),
     ];
 
@@ -70,7 +72,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               selectedFontSize: 12.sp,
               unselectedFontSize: 12.sp,
               selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+              unselectedLabelStyle:
+                  const TextStyle(fontWeight: FontWeight.w500),
               items: [
                 BottomNavigationBarItem(
                   icon: const Icon(Icons.home_outlined),
@@ -78,14 +81,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   label: 'nav_home'.tr(),
                 ),
                 BottomNavigationBarItem(
-                  icon: const Icon(Icons.checkroom_outlined),
-                  activeIcon: const Icon(Icons.checkroom),
-                  label: 'nav_wardrobe'.tr(),
+                  icon: const Icon(Icons.accessibility_new_outlined),
+                  activeIcon: const Icon(Icons.accessibility_new_rounded),
+                  label: 'nav_outfits'.tr(),
                 ),
                 BottomNavigationBarItem(
-                  icon: const Icon(Icons.style_outlined),
-                  activeIcon: const Icon(Icons.style),
-                  label: 'nav_outfits'.tr(),
+                  icon: const Icon(Icons.smart_toy_outlined),
+                  activeIcon: const Icon(Icons.smart_toy_rounded),
+                  label: 'nav_chat_bot'.tr(),
                 ),
                 BottomNavigationBarItem(
                   icon: const Icon(Icons.person_outline_rounded),

@@ -41,6 +41,7 @@ class _PhotoAnalysisPreviewScreenState
     extends State<PhotoAnalysisPreviewScreen> {
   late String _currentImagePath;
   bool _isAddingToCloset = false;
+  ItemAttributes? _detectedAttributes;
 
   @override
   void initState() {
@@ -51,21 +52,102 @@ class _PhotoAnalysisPreviewScreenState
   Future<void> _handleAddToCloset(BuildContext context) async {
     if (_isAddingToCloset) return;
 
+    if (ClosetManager.instance.contains(_currentImagePath)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded,
+                  color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'item_already_in_closet'.tr(),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFC8A97E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const ProfileScreen(),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isAddingToCloset = true;
     });
 
+    // Ensure AI scanning has completed before uploading attributes
+    if (_detectedAttributes == null) {
+      try {
+        final scanner = getIt<ClipScanner>();
+        final file = File(_currentImagePath);
+        if (await file.exists()) {
+          _detectedAttributes = await scanner.scanImageFile(file);
+        }
+      } catch (e) {
+        debugPrint('Error scanning during addToCloset: $e');
+      }
+    }
+
     final dataSource = getIt<WardrobeRemoteDataSource>();
-    final result = await dataSource.addToMyCloset(imagePath: _currentImagePath);
+    final detectedCat = _detectedAttributes?.category;
+    final detectedSubcat = _detectedAttributes?.subcategory;
+    String cat = detectedCat ?? detectedSubcat ?? widget.categoryTitle;
+
+    // If still generic or default, check filename or path for keywords
+    if (cat == 'Crew Neck T-Shirt' || cat.isEmpty) {
+      final lp = _currentImagePath.toLowerCase();
+      if (lp.contains('pant') ||
+          lp.contains('trouser') ||
+          lp.contains('jean') ||
+          lp.contains('short')) {
+        cat = 'trousers';
+      } else if (lp.contains('shirt') ||
+          lp.contains('tee') ||
+          lp.contains('top') ||
+          lp.contains('sweater') ||
+          lp.contains('hoodie')) {
+        cat = 't-shirt';
+      }
+    }
+
+    final col = _detectedAttributes?.dominantColor ?? widget.colorName;
+    final fit = _detectedAttributes?.style ?? widget.fitName;
+    final pattern = widget.patternName;
+    final style = _detectedAttributes?.style;
+    final season = _detectedAttributes?.season;
+
+    final result = await dataSource.addToMyCloset(
+      imagePath: _currentImagePath,
+      category: cat,
+      subcategory: detectedSubcat,
+      color: col,
+      fit: fit,
+      style: style,
+      season: season,
+      pattern: pattern,
+      addToMyCloset: true,
+    );
 
     if (!mounted) return;
 
-    setState(() {
-      _isAddingToCloset = false;
-    });
-
     result.fold(
       (failure) {
+        setState(() {
+          _isAddingToCloset = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -92,10 +174,26 @@ class _PhotoAnalysisPreviewScreenState
         );
       },
       (response) {
-        ClosetManager.instance.addItem(_currentImagePath);
+        ClosetManager.instance.addItem(
+          _currentImagePath,
+          model: WardrobeItemModel(
+            id: response.data ?? DateTime.now().millisecondsSinceEpoch,
+            imageUrl: _currentImagePath,
+            attributes: {
+              'category': cat,
+              'subcategory': detectedSubcat,
+              'color': col,
+              'fit': fit,
+              'style': style,
+              'season': season,
+              'pattern': pattern,
+            },
+          ),
+        );
 
         final successMessage = response.message ==
                     'WardrobeItemAddedToYourClosetSuccessfully' ||
+                response.message == 'WardrobeItemCreatedSuccessfully' ||
                 response.message == null ||
                 response.message!.isEmpty
             ? 'item_added_closet'.tr()
@@ -402,6 +500,11 @@ class _PhotoAnalysisPreviewScreenState
       },
       child: BlocConsumer<WardrobeScannerBloc, WardrobeScannerState>(
         listener: (context, state) {
+          if (state is WardrobeScannerSuccess) {
+            _detectedAttributes = state.attributes;
+          } else if (state is WardrobeScannerLowConfidence) {
+            _detectedAttributes = state.attributes;
+          }
           if (state is WardrobeScannerFailure) {
             _showMandatoryRetakeDialog(context);
           }
@@ -414,12 +517,12 @@ class _PhotoAnalysisPreviewScreenState
           final hasClothing = isSuccess || isLowConfidence;
           final needsMandatoryRetake = isFailure;
 
-          ItemAttributes? detectedAttributes;
           if (state is WardrobeScannerSuccess) {
-            detectedAttributes = state.attributes;
+            _detectedAttributes = state.attributes;
           } else if (state is WardrobeScannerLowConfidence) {
-            detectedAttributes = state.attributes;
+            _detectedAttributes = state.attributes;
           }
+          final detectedAttributes = _detectedAttributes;
 
           return Scaffold(
             backgroundColor: const Color(0xFFF5F3EF),
@@ -767,7 +870,10 @@ class _PhotoAnalysisPreviewScreenState
                                               ),
                                             )
                                           : Text(
-                                              'add_to_closet'.tr(),
+                                              ClosetManager.instance
+                                                      .contains(_currentImagePath)
+                                                  ? 'item_already_in_closet'.tr()
+                                                  : 'add_to_closet'.tr(),
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontSize: 13.sp,

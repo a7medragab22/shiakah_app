@@ -28,16 +28,15 @@ class LooksManager extends ValueNotifier<List<String>> {
   }
 
   void syncRemoteItems(List<String> remotePaths) {
-    final combined = <String>[...remotePaths];
-    for (final item in value) {
-      if (!combined.contains(item)) {
-        combined.add(item);
-      }
-    }
-    value = combined;
+    final unique = remotePaths
+        .map((p) => p.trim())
+        .where((p) => p.isNotEmpty)
+        .toSet()
+        .toList();
+    value = unique;
   }
 
   void setItems(List<String> items) {
-    value = items;
+    value = items.toSet().toList();
   }
 }

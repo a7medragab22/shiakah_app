@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/localization/app_localization_helper.dart';
+import '../../../../core/outfit_engine/outfit_engine.dart';
 import '../../../../core/service_locator/scanner/scanner.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../profile/presentation/screens/item_details_screen.dart';
@@ -35,6 +36,7 @@ class AiDetectedScreen extends StatefulWidget {
 
 class _AiDetectedScreenState extends State<AiDetectedScreen> {
   String _selectedOccasion = 'Casual';
+  bool _isGenerating = false;
 
   final List<Map<String, String>> _occasions = const [
     {'id': 'Casual', 'key': 'casual'},
@@ -48,6 +50,154 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
     {'id': 'Gym', 'key': 'sportswear'},
     {'id': 'AI Pick', 'key': 'smart_casual'},
   ];
+
+  Future<void> _handleGenerateOutfits() async {
+    if (_isGenerating) return;
+
+    setState(() {
+      _isGenerating = true;
+    });
+
+    final occasion = Occasion.fromAlias(_selectedOccasion);
+
+    final result = await ClosetOutfitCoordinator.generateOutfit(
+      imagePath: widget.imagePath,
+      category: widget.attributes?.category,
+      subcategory: widget.attributes?.subcategory,
+      categoryTitle: widget.attributes?.category ??
+          widget.attributes?.subcategory ??
+          widget.categoryTitle,
+      colorName: widget.attributes?.dominantColor ?? widget.colorName,
+      colorHex: widget.colorHex,
+      fitName: widget.attributes?.style ?? widget.fitName,
+      patternName: widget.patternName,
+      styleName: widget.attributes?.style,
+      seasonName: widget.attributes?.season,
+      occasion: occasion,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isGenerating = false;
+    });
+
+    if (result.status == ClosetCheckStatus.emptyCloset ||
+        result.status == ClosetCheckStatus.noBottoms ||
+        result.status == ClosetCheckStatus.noTops) {
+      final String alertTitle;
+      if (result.status == ClosetCheckStatus.emptyCloset) {
+        alertTitle = context.isArabic ? 'دولابك فارغ' : 'Your Closet is Empty';
+      } else if (result.status == ClosetCheckStatus.noTops) {
+        alertTitle =
+            context.isArabic ? 'لا يوجد تيشيرت للتنسيق' : 'No Tops in Closet';
+      } else {
+        alertTitle =
+            context.isArabic ? 'لا يوجد بنطلون للتنسيق' : 'No Pants in Closet';
+      }
+      _showClosetAlert(
+        title: alertTitle,
+        message: result.message ?? '',
+      );
+      return;
+    }
+
+    if (result.status == ClosetCheckStatus.success) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ItemDetailsScreen(
+            initialImage: widget.imagePath,
+            outfitImages: result.outfitImages,
+            garmentColor: result.topColorHex,
+            pantsColor: result.pantsColorHex,
+            outfitPayload: result.payload,
+            occasion: _selectedOccasion,
+          ),
+        ),
+      );
+    }
+  }
+
+  void _showClosetAlert({
+    required String title,
+    required String message,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 22.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60.w,
+                height: 60.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFC8A97E).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.checkroom_rounded,
+                  color: const Color(0xFFC8A97E),
+                  size: 32.sp,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF7A736B),
+                  height: 1.5,
+                ),
+              ),
+              SizedBox(height: 22.h),
+              SizedBox(
+                width: double.infinity,
+                height: 48.h,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFC8A97E),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    context.isArabic ? 'حسناً' : 'OK',
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -341,31 +491,34 @@ class _AiDetectedScreenState extends State<AiDetectedScreen> {
                             width: double.infinity,
                             height: 52.h,
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ItemDetailsScreen(
-                                      initialImage: widget.imagePath,
-                                    ),
-                                  ),
-                                );
-                              },
+                              onPressed:
+                                  _isGenerating ? null : _handleGenerateOutfits,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFC8A97E),
+                                disabledBackgroundColor:
+                                    const Color(0xFFC8A97E).withValues(alpha: 0.6),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14.r),
                                 ),
                               ),
-                              child: Text(
-                                'generate_outfits'.tr(),
-                                style: TextStyle(
-                                  fontSize: 16.5.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
+                              child: _isGenerating
+                                  ? SizedBox(
+                                      width: 24.w,
+                                      height: 24.w,
+                                      child: const CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                  : Text(
+                                      'generate_outfits'.tr(),
+                                      style: TextStyle(
+                                        fontSize: 16.5.sp,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                             ),
                           ),
                         ],
