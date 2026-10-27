@@ -19,6 +19,7 @@ import '../local_storage/local_storage.dart';
 import '../localization/locale_keys.g.dart';
 import '../params/params.dart';
 import '../service_locator/service_locator.dart';
+import '../../features/home/data/models/my_closet_response_model.dart';
 import '../widgets/widgets.dart';
 part 'pagination_handler.dart';
 part 'logger.dart';

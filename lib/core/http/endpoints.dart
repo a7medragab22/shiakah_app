@@ -22,8 +22,10 @@ abstract interface class Endpoints {
   static const String preferences = "/api/Onboarding/preferences";
   static const String onboardingProfile = "/api/Onboarding/profile";
   static const String onboardingStatus = "/api/Onboarding/status";
-  static const String addToMyCloset = "/api/Wardrobe/add-to-my-closet";
+  static const String addToMyCloset = "/api/Wardrobe/add-item";
   static const String myCloset = "/api/Wardrobe/my-closet";
+  static const String removeWardrobeItemBase = "/api/Wardrobe/remove-item";
+  static String removeWardrobeItem(dynamic itemId) => "/api/Wardrobe/remove-item/$itemId";
   static const String myLooks = "/api/OutfitResult/my-looks";
   static const String logout = "/logout";
 }

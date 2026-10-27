@@ -39,6 +39,11 @@ abstract interface class DI {
         () => MyClosetCubit(getIt<WardrobeRemoteDataSource>()),
       );
     }
+    if (!getIt.isRegistered<RemoveFromClosetCubit>()) {
+      getIt.registerFactory<RemoveFromClosetCubit>(
+        () => RemoveFromClosetCubit(getIt<WardrobeRemoteDataSource>()),
+      );
+    }
     if (!getIt.isRegistered<OutfitRemoteDataSource>()) {
       getIt.registerLazySingleton<OutfitRemoteDataSource>(
         () => OutfitRemoteDataSourceImpl(getIt<GenericDataSource>()),

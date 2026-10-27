@@ -7,8 +7,12 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/localization/app_localization_helper.dart';
 import '../../../../core/localization/locales.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../profile/presentation/screens/item_details_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
+import '../../data/models/weather_model.dart';
 import '../cubit/weather_cubit.dart';
+import '../cubit/weather_state.dart';
+import '../helpers/weather_tips_helper.dart';
 import '../widgets/camera_access_bottom_sheet.dart';
 import '../widgets/weather_card_widget.dart';
 import 'add_manually_screen.dart';
@@ -21,6 +25,12 @@ class HomeScreen extends StatelessWidget {
       context,
       MaterialPageRoute(builder: (_) => const ProfileScreen()),
     );
+  }
+
+  WeatherModel? _extractWeather(WeatherState state) {
+    if (state is WeatherLoaded) return state.weather;
+    if (state is WeatherError) return state.cachedWeather;
+    return null;
   }
 
   @override
@@ -45,7 +55,7 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── 1. Top Header (Profile + Greeting + Notification & Language & User Icons) ──
+                      // ── 1. Top Header (Profile + Greeting & Language & User Icons) ──
                       _buildHeader(context),
                       SizedBox(height: 18.h),
 
@@ -53,8 +63,14 @@ class HomeScreen extends StatelessWidget {
                       const WeatherCardWidget(),
                       SizedBox(height: 16.h),
 
-                      // ── 3. Today's Style Guide Card ───────────────────────────────
-                      _buildStyleGuideCard(),
+                      // ── 3. Today's Style Guide Card (Weather-driven tips) ─────────
+                      BlocBuilder<WeatherCubit, WeatherState>(
+                        builder: (context, weatherState) {
+                          final weather = _extractWeather(weatherState);
+                          final tips = WeatherTips.fromWeather(weather);
+                          return _buildStyleGuideCard(context, tips);
+                        },
+                      ),
                       SizedBox(height: 16.h),
 
                       // ── 4. Action Cards (Add Clothing & Add Manually) ──────────────
@@ -75,8 +91,14 @@ class HomeScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 18.h),
 
-                      // ── 5. Good to Know Card ──────────────────────────────────────
-                      _buildGoodToKnowCard(),
+                      // ── 5. Good to Know Card (Weather-driven advice) ───────────────
+                      BlocBuilder<WeatherCubit, WeatherState>(
+                        builder: (context, weatherState) {
+                          final weather = _extractWeather(weatherState);
+                          final tips = WeatherTips.fromWeather(weather);
+                          return _buildGoodToKnowCard(tips);
+                        },
+                      ),
                       SizedBox(height: 20.h),
                     ],
                   ),
@@ -142,10 +164,10 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
 
-        // Right Side: Globe Language Switcher + Notification Bell & Profile Buttons
+        // Right Side: Globe Language Switcher & Profile Buttons
         Row(
           children: [
-            // Globe Language Button (next to Notification icon)
+            // Globe Language Button
             Container(
               width: 42.w,
               height: 42.w,
@@ -162,26 +184,6 @@ class HomeScreen extends StatelessWidget {
                 icon: Icon(
                   Icons.language_rounded,
                   color: AppColors.primary,
-                  size: 22.sp,
-                ),
-                padding: EdgeInsets.zero,
-              ),
-            ),
-            SizedBox(width: 8.w),
-
-            // Bell Button
-            Container(
-              width: 42.w,
-              height: 42.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF6F2EC),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.notifications_none_rounded,
-                  color: AppColors.textPrimary,
                   size: 22.sp,
                 ),
                 padding: EdgeInsets.zero,
@@ -214,56 +216,94 @@ class HomeScreen extends StatelessWidget {
   }
 
   // ───────────────────────────────────────────────────────────────────────────
-  // Today's Style Guide Card
+  // Today's Style Guide Card (Tap to open 3D Avatar Outfits)
   // ───────────────────────────────────────────────────────────────────────────
-  Widget _buildStyleGuideCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(18.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(
-          color: const Color(0xFFEAE3D9),
-          width: 1.2,
+  Widget _buildStyleGuideCard(BuildContext context, WeatherTips tips) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ItemDetailsScreen()),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(18.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(
+            color: const Color(0xFFEAE3D9),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "today_style_guide".tr(),
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "today_style_guide".tr(),
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC8A97E).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.accessibility_new_rounded,
+                        size: 14.sp,
+                        color: const Color(0xFFC8A97E),
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        '3D Try-On',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF9E7E52),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'style_guide_subtitle'.tr(),
-            style: TextStyle(
-              fontSize: 12.5.sp,
-              fontWeight: FontWeight.w400,
-              color: const Color(0xFF8E8883),
+            SizedBox(height: 4.h),
+            Text(
+              'style_guide_subtitle'.tr(),
+              style: TextStyle(
+                fontSize: 12.5.sp,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF8E8883),
+              ),
             ),
-          ),
-          SizedBox(height: 16.h),
+            SizedBox(height: 16.h),
 
-          // Checklist Items
-          _buildChecklistItem('style_guide_check_1'.tr()),
-          SizedBox(height: 10.h),
-          _buildChecklistItem('style_guide_check_2'.tr()),
-          SizedBox(height: 10.h),
-          _buildChecklistItem('style_guide_check_3'.tr()),
-        ],
+            // Checklist Items (Dynamic from real Weather)
+            for (int i = 0; i < tips.checklistTips.length; i++) ...[
+              if (i > 0) SizedBox(height: 10.h),
+              _buildChecklistItem(tips.checklistTips[i]),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -468,7 +508,7 @@ class HomeScreen extends StatelessWidget {
   // ───────────────────────────────────────────────────────────────────────────
   // Good to Know Card
   // ───────────────────────────────────────────────────────────────────────────
-  Widget _buildGoodToKnowCard() {
+  Widget _buildGoodToKnowCard(WeatherTips tips) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
@@ -497,17 +537,17 @@ class HomeScreen extends StatelessWidget {
               Row(
                 children: [
                   Icon(
-                    Icons.air_rounded,
-                    color: const Color(0xFF2EAA9B),
+                    tips.badgeIcon,
+                    color: tips.badgeColor,
                     size: 18.sp,
                   ),
                   SizedBox(width: 4.w),
                   Text(
-                    'windy'.tr(),
+                    tips.badgeText,
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF2EAA9B),
+                      color: tips.badgeColor,
                     ),
                   ),
                 ],
@@ -516,7 +556,7 @@ class HomeScreen extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            'breezy_note'.tr(),
+            tips.noteText,
             style: TextStyle(
               fontSize: 13.sp,
               fontWeight: FontWeight.w400,

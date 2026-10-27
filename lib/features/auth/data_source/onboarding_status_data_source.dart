@@ -56,6 +56,16 @@ class OnboardingStatusDataSourceImpl implements OnboardingStatusDataSource {
             if (location != null && location.isNotEmpty) {
               await HiveServiceImpl.put('settings_box', 'user_location', location);
             }
+
+            final gender = profile.gender?.trim();
+            if (gender != null && gender.isNotEmpty) {
+              final normalized = (gender == '2' ||
+                      gender.toLowerCase().contains('fem') ||
+                      gender.toLowerCase().contains('wom'))
+                  ? 'female'
+                  : 'male';
+              await HiveServiceImpl.put('settings_box', 'user_gender', normalized);
+            }
           } catch (_) {}
         }
 

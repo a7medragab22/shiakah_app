@@ -40,11 +40,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             listener: (context, state) {
               if (state.status == Status.success &&
                   state.data?.data?.items != null) {
-                final remoteUrls = state.data!.data!.items
-                    .map((item) => item.fullImageUrl)
-                    .where((url) => url.isNotEmpty)
-                    .toList();
-                ClosetManager.instance.syncRemoteItems(remoteUrls);
+                ClosetManager.instance
+                    .syncRemoteModels(state.data!.data!.items);
               }
             },
           ),
@@ -696,7 +693,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _confirmAndDeleteItem(BuildContext context, String imagePath) {
     final isCloset = _selectedTabIndex == 0;
-    final itemName = isCloset ? 'My Closet' : 'My Looks';
+    final itemName = isCloset ? 'nav_wardrobe'.tr() : 'nav_outfits'.tr();
 
     showDialog(
       context: context,
@@ -723,7 +720,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               SizedBox(width: 10.w),
               Text(
-                'Delete Item',
+                'delete_item'.tr(),
                 style: TextStyle(
                   fontSize: 17.sp,
                   fontWeight: FontWeight.w700,
@@ -733,7 +730,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
           content: Text(
-            'Are you sure you want to remove this item from $itemName?',
+            'confirm_delete_from'.tr(args: [itemName]),
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w500,
@@ -761,7 +758,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       child: Text(
-                        'Cancel',
+                        'cancel'.tr(),
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
@@ -778,10 +775,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: SizedBox(
                     height: 44.h,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         Navigator.pop(dialogContext);
                         if (_selectedTabIndex == 0) {
+                          final item =
+                              ClosetManager.instance.findModel(imagePath);
                           ClosetManager.instance.removeItem(imagePath);
+
+                          if (item != null && item.id != 0) {
+                            try {
+                              final dataSource =
+                                  getIt<WardrobeRemoteDataSource>();
+                              final result = await dataSource
+                                  .removeWardrobeItem(itemId: item.id);
+                              if (context.mounted) {
+                                result.fold(
+                                  (failure) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          failure.message.isNotEmpty
+                                              ? failure.message
+                                              : 'item_remove_failed'.tr(),
+                                        ),
+                                        backgroundColor:
+                                            const Color(0xFFD32F2F),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  },
+                                  (response) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'item_removed_success'.tr()),
+                                        backgroundColor:
+                                            const Color(0xFF388E3C),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
+                            } catch (_) {}
+                          }
                         } else {
                           LooksManager.instance.removeItem(imagePath);
                         }
@@ -794,7 +833,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       child: Text(
-                        'Delete',
+                        'delete'.tr(),
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,

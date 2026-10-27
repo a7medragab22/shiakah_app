@@ -3,7 +3,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/helpers/helpers.dart';
+import '../../../../core/service_locator/service_locator.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../home/data/services/wardrobe_remote_data_source.dart';
 
 class MoreDetailsScreen extends StatefulWidget {
   final String? imagePath;
@@ -22,21 +25,85 @@ class MoreDetailsScreen extends StatefulWidget {
 class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
   bool _isFavorite = true;
   bool _saveToCloset = false;
+  bool _wasAlreadyInCloset = false;
+  bool _isSubmitting = false;
 
-  void _handleDoneStyling() {
-    if (_saveToCloset) {
-      if (widget.onSaveToCloset != null) {
-        widget.onSaveToCloset!(widget.imagePath ?? 'assets/images/man.png');
+  @override
+  void initState() {
+    super.initState();
+    final img = widget.imagePath ?? 'assets/images/man.png';
+    _wasAlreadyInCloset = ClosetManager.instance.contains(img);
+    _saveToCloset = _wasAlreadyInCloset;
+  }
+
+  void _handleDoneStyling() async {
+    if (_isSubmitting) return;
+
+    if (_saveToCloset && !_wasAlreadyInCloset) {
+      setState(() {
+        _isSubmitting = true;
+      });
+
+      final img = widget.imagePath ?? 'assets/images/man.png';
+      if (!ClosetManager.instance.contains(img)) {
+        if (widget.onSaveToCloset != null) {
+          await widget.onSaveToCloset!(img);
+        } else {
+          try {
+            final dataSource = getIt<WardrobeRemoteDataSource>();
+            final lp = img.toLowerCase();
+            final isBottom = lp.contains('pant') ||
+                lp.contains('jean') ||
+                lp.contains('trouser') ||
+                lp.contains('short');
+            final category = isBottom ? 'Pants' : null;
+            await dataSource.addToMyCloset(
+              imagePath: img,
+              category: category,
+              addToMyCloset: true,
+            );
+            ClosetManager.instance.addItem(
+              img,
+              model: WardrobeItemModel(
+                id: DateTime.now().millisecondsSinceEpoch,
+                imageUrl: img,
+                attributes: category != null ? {'category': category} : null,
+              ),
+            );
+          } catch (_) {}
+        }
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('item_saved_success'.tr()),
-          backgroundColor: const Color(0xFF388E3C),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _wasAlreadyInCloset = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('item_saved_success'.tr()),
+            backgroundColor: const Color(0xFF388E3C),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } else if (!_saveToCloset && _wasAlreadyInCloset) {
+      final img = widget.imagePath ?? 'assets/images/man.png';
+      final item = ClosetManager.instance.findModel(img);
+      ClosetManager.instance.removeItem(img);
+      if (item != null && item.id != 0) {
+        try {
+          final dataSource = getIt<WardrobeRemoteDataSource>();
+          await dataSource.removeWardrobeItem(itemId: item.id);
+        } catch (_) {}
+      }
+      if (mounted) {
+        setState(() {
+          _wasAlreadyInCloset = false;
+        });
+      }
     }
-    Navigator.pop(context, _saveToCloset);
+    if (mounted) Navigator.pop(context, _saveToCloset);
   }
 
   @override
@@ -312,7 +379,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                     width: double.infinity,
                     height: 50.h,
                     child: ElevatedButton(
-                      onPressed: _handleDoneStyling,
+                      onPressed: _isSubmitting ? null : _handleDoneStyling,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFC8A97E),
                         elevation: 0,
@@ -320,14 +387,23 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                           borderRadius: BorderRadius.circular(14.r),
                         ),
                       ),
-                      child: Text(
-                        'done_styling'.tr(),
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: _isSubmitting
+                          ? SizedBox(
+                              width: 22.w,
+                              height: 22.w,
+                              child: const CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.2,
+                              ),
+                            )
+                          : Text(
+                              'done_styling'.tr(),
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
                   SizedBox(height: 16.h),
