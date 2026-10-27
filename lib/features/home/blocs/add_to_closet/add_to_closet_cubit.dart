@@ -11,9 +11,26 @@ class AddToClosetCubit extends Cubit<BaseState<AddToClosetResponseModel>> {
   AddToClosetCubit(this._dataSource)
       : super(const BaseState<AddToClosetResponseModel>());
 
-  Future<void> addToCloset(String imagePath) async {
+  Future<void> addToCloset(
+    String imagePath, {
+    String? category,
+    String? color,
+    String? fit,
+    String? style,
+    String? season,
+    String? pattern,
+  }) async {
     emit(state.copyWith(status: Status.loading));
-    final result = await _dataSource.addToMyCloset(imagePath: imagePath);
+    final result = await _dataSource.addToMyCloset(
+      imagePath: imagePath,
+      category: category,
+      color: color,
+      fit: fit,
+      style: style,
+      season: season,
+      pattern: pattern,
+      addToMyCloset: true,
+    );
     result.fold(
       (failure) {
         emit(state.copyWith(

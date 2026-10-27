@@ -8,20 +8,33 @@ import 'package:shiakah/features/home/data/models/add_to_closet_response_model.d
 import 'package:shiakah/features/home/data/models/my_closet_response_model.dart';
 import 'package:shiakah/features/home/data/services/wardrobe_remote_data_source.dart';
 
+import 'package:shiakah/features/home/blocs/remove_from_closet/remove_from_closet_cubit.dart';
+import 'package:shiakah/features/home/data/models/remove_item_response_model.dart';
+
 class MockWardrobeRemoteDataSource implements WardrobeRemoteDataSource {
   final bool shouldFail;
   final AddToClosetResponseModel? responseModel;
   final MyClosetResponseModel? myClosetResponseModel;
+  final RemoveItemResponseModel? removeItemResponseModel;
 
   MockWardrobeRemoteDataSource({
     this.shouldFail = false,
     this.responseModel,
     this.myClosetResponseModel,
+    this.removeItemResponseModel,
   });
 
   @override
   Future<Either<Failure, AddToClosetResponseModel>> addToMyCloset({
     required String imagePath,
+    String? category,
+    String? subcategory,
+    String? color,
+    String? fit,
+    String? style,
+    String? season,
+    String? pattern,
+    bool addToMyCloset = true,
   }) async {
     if (shouldFail) {
       return Left(ServerFailure(message: 'Failed to add item to wardrobe'));
@@ -56,6 +69,23 @@ class MockWardrobeRemoteDataSource implements WardrobeRemoteDataSource {
               ],
             ),
             message: 'WardrobeRetrievedSuccessfully',
+          ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, RemoveItemResponseModel>> removeWardrobeItem({
+    required int itemId,
+  }) async {
+    if (shouldFail) {
+      return Left(ServerFailure(message: 'WardrobeItemNotFound'));
+    }
+    return Right(
+      removeItemResponseModel ??
+          const RemoveItemResponseModel(
+            success: true,
+            data: null,
+            message: 'WardrobeItemRemovedSuccessfully',
           ),
     );
   }
@@ -209,9 +239,76 @@ void main() {
       await cubit.fetchMyCloset();
     });
 
-    test('Endpoints contains myCloset and addToMyCloset paths', () {
-      expect(Endpoints.addToMyCloset, '/api/Wardrobe/add-to-my-closet');
+    test('Endpoints contains myCloset, addToMyCloset, and removeWardrobeItem paths', () {
+      expect(Endpoints.addToMyCloset, '/api/Wardrobe/add-item');
       expect(Endpoints.myCloset, '/api/Wardrobe/my-closet');
+      expect(Endpoints.removeWardrobeItem(21), '/api/Wardrobe/remove-item/21');
+      expect(Endpoints.removeWardrobeItem('42'), '/api/Wardrobe/remove-item/42');
+    });
+
+    test('RemoveItemResponseModel parses success and error JSON correctly', () {
+      final successJson = {
+        "success": true,
+        "data": null,
+        "message": "WardrobeItemRemovedSuccessfully",
+        "errors": null,
+        "meta": null
+      };
+      final model = RemoveItemResponseModel.fromJson(successJson);
+      expect(model.success, true);
+      expect(model.message, "WardrobeItemRemovedSuccessfully");
+
+      final errorJson = {
+        "success": false,
+        "data": null,
+        "message": "WardrobeItemNotFound",
+        "errors": null,
+        "meta": null
+      };
+      final errorModel = RemoveItemResponseModel.fromJson(errorJson);
+      expect(errorModel.success, false);
+      expect(errorModel.message, "WardrobeItemNotFound");
+    });
+
+    test('RemoveFromClosetCubit emits loading then success on successful deletion', () async {
+      final mockDataSource = MockWardrobeRemoteDataSource();
+      final cubit = RemoveFromClosetCubit(mockDataSource);
+
+      final expectedStates = [
+        predicate<BaseState<RemoveItemResponseModel>>(
+          (s) => s.status == Status.loading,
+        ),
+        predicate<BaseState<RemoveItemResponseModel>>(
+          (s) =>
+              s.status == Status.success &&
+              s.data?.success == true &&
+              s.data?.message == 'WardrobeItemRemovedSuccessfully',
+        ),
+      ];
+
+      expectLater(cubit.stream, emitsInOrder(expectedStates));
+
+      await cubit.removeItem(21);
+    });
+
+    test('RemoveFromClosetCubit emits loading then failure on failed deletion (404/not found)', () async {
+      final mockDataSource = MockWardrobeRemoteDataSource(shouldFail: true);
+      final cubit = RemoveFromClosetCubit(mockDataSource);
+
+      final expectedStates = [
+        predicate<BaseState<RemoveItemResponseModel>>(
+          (s) => s.status == Status.loading,
+        ),
+        predicate<BaseState<RemoveItemResponseModel>>(
+          (s) =>
+              s.status == Status.failure &&
+              s.errorMessage == 'WardrobeItemNotFound',
+        ),
+      ];
+
+      expectLater(cubit.stream, emitsInOrder(expectedStates));
+
+      await cubit.removeItem(9999);
     });
   });
 }

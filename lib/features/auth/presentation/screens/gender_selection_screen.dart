@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/bloc/paginated_bloc/exports.dart';
 import '../../../../core/enum/status.dart';
+import '../../../../core/local_storage/local_storage.dart';
 import '../../../../core/router/router.dart';
 import '../../../../core/service_locator/service_locator.dart';
 import '../../../../core/theme/theme.dart';
@@ -147,11 +148,18 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
                         isLoading: isLoading,
                         onPressed: _selected == null || isLoading
                             ? null
-                            : () {
+                            : () async {
                                 final int genderId = _selected == 'men' ? 1 : 2;
-                                context.read<GenderBloc>().add(
-                                      GenderSubmitted(gender: genderId),
-                                    );
+                                await HiveServiceImpl.put<String>(
+                                  'settings_box',
+                                  'user_gender',
+                                  _selected == 'men' ? 'male' : 'female',
+                                );
+                                if (context.mounted) {
+                                  context.read<GenderBloc>().add(
+                                        GenderSubmitted(gender: genderId),
+                                      );
+                                }
                               },
                       ),
 
